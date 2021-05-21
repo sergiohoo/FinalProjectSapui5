@@ -12,7 +12,10 @@
                 
             </content>
             <footer>
-                
+                <Toolbar >
+                    <ToolbarSpacer ></ToolbarSpacer>
+                    <Button text="{i18n>cancel}" press="onCancel"></Button>
+                </Toolbar>
             </footer>
         </Page>
 </mvc:View>
