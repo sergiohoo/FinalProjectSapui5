@@ -5,15 +5,40 @@
         xmlns="sap.m"
         xmlns:core="sap.ui.core">
 
-        <!-- Vista para ver los empleados -->
+        <!-- Vista para crear los empleados -->
 
         <Page title="{i18n>createEmployee}">
             <content>
+                <!-- Wizard para ingresar los
+                        datos del empleado
+                -->
+                <Wizard id="CreateEmployeeWizard" class="sapUiResponsivePadding--header sapUiResponsivePadding--content">
+                    <!-- Paso 1: Tipo de empleado -->
+                    <WizardStep id="EmployeeTypeStep" title="{i18n>employeeType}">
+                        <MessageStrip class="sapUiSmallMarginBottom"
+                                        text="{i18n>employeeTypeMessageStrip}"
+                                        showIcon="true"></MessageStrip>
+                        <HBox alignItems="Center" justifyContent="Center" width="100%">
+                            <Button id="employeeType0" type="{jsonButtonType>/employeeType0}" icon="sap-icon://employee-pane" text="{i18n>intern}"
+                                    class="sapUiSmallMarginEnd" press="onSelectEmployeeType"/>
+                            <Button id="employeeType1" type="{jsonButtonType>/employeeType1}" icon="sap-icon://employee" text="{i18n>freelancer}"
+                                    class="sapUiSmallMarginEnd" press="onSelectEmployeeType"/>
+                            <Button id="employeeType2" type="{jsonButtonType>/employeeType2}" icon="sap-icon://leads" text="{i18n>manager}"
+                                    press="onSelectEmployeeType"/>
+                        </HBox>
+                    </WizardStep>
+                    <!-- Paso 2: Datos del empleado -->
+                    <WizardStep id="EmployeeDataStep" title="{i18n>employeeData}">
+
+                    </WizardStep>
+                </Wizard>
                 
             </content>
             <footer>
                 <Toolbar >
                     <ToolbarSpacer ></ToolbarSpacer>
+                    <!-- Botón para cancelar la operación y 
+                            volver al menú principal (launchpad) -->
                     <Button text="{i18n>cancel}" press="onCancel"></Button>
                 </Toolbar>
             </footer>

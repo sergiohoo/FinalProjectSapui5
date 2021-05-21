@@ -1,4 +1,5 @@
 {
   "plugins": ["@sap/ui5-jsdocs"],
   "extends": ["plugin:@sap/ui5-jsdocs/recommended", "eslint:recommended"]
+  
 }

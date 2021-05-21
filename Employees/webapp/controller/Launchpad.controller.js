@@ -13,14 +13,20 @@ sap.ui.define([
             },
             
             // Funciones de navegación desde el Launchpad
+            
+            // A Employees
             toEmployees: function () {
                 var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
                 oRouter.navTo("RouteEmployees");
             },
+            
+            // A CreateEmployees
             toCreateEmployee: function () {
                 var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
                 oRouter.navTo("RouteCreateEmployee");
             },
+
+            // A Orders
             toOrders: function () {
                 var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
                 oRouter.navTo("RouteOrders");

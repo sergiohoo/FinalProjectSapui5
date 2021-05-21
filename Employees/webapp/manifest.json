@@ -69,7 +69,7 @@
           "bundleName": "hr.Employees.i18n.i18n"
         }
       },
-      "": {
+      "odataEmployees": {
         "dataSource": "mainService",
         "preload": true,
         "settings": {
