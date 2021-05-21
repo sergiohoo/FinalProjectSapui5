@@ -1,0 +1,18 @@
+<mvc:View
+        controllerName="hr.Employees.controller.Employees"
+        xmlns:mvc="sap.ui.core.mvc"
+        displayBlock="true"
+        xmlns="sap.m"
+        xmlns:core="sap.ui.core">
+
+        <!-- Vista para ver los empleados -->
+
+        <Page title="{i18n>employeesTitle}">
+            <content>
+                <Text text="Emmployees"></Text>
+            </content>
+            <footer>
+                
+            </footer>
+        </Page>
+</mvc:View>

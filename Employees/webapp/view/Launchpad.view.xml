@@ -1,0 +1,43 @@
+<mvc:View
+        controllerName="hr.Employees.controller.Launchpad"
+        xmlns:mvc="sap.ui.core.mvc"
+        displayBlock="true"
+        xmlns="sap.m"
+        xmlns:core="sap.ui.core">
+
+        <!-- Vista para ver los empleados -->
+
+        <Page title="{i18n>launchpadTitle}">
+            <content>
+                <!-- Panel que contiene los botones de empleado -->
+                <Panel headerText="{i18n>employees}" expandable="true" expanded="true">
+                    <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout"
+                        header="{i18n>createEmployee}" press="toCreateEmployee">
+                        <TileContent>
+                            <ImageContent src="sap-icon://add-employee" />
+                        </TileContent>
+                    </GenericTile>
+
+                    <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout"
+                        header="{i18n>seeEmployees}" press="toEmployees">
+                        <TileContent>
+                            <ImageContent src="sap-icon://employee-lookup" />
+                        </TileContent>
+                    </GenericTile>
+                </Panel>
+                
+                <!-- Panel que contiene los botones de pedidos -->
+                <Panel headerText="{i18n>orders}" expandable="true" expanded="true">
+                    <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout"
+                        header="{i18n>signOrder}" press="toOrders">
+                        <TileContent>
+                            <ImageContent src="sap-icon://signature" />
+                        </TileContent>
+                    </GenericTile>
+                </Panel>
+            </content>
+            <footer>
+                
+            </footer>
+        </Page>
+</mvc:View>

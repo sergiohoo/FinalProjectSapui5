@@ -45,10 +45,10 @@
   "sap.ui5": {
     "flexEnabled": false,
     "rootView": {
-      "viewName": "hr.Employees.view.Main",
+      "viewName": "hr.Employees.view.App",
       "type": "XML",
       "async": true,
-      "id": "Main"
+      "id": "app"
     },
     "dependencies": {
       "minUI5Version": "1.60.1",
@@ -98,20 +98,62 @@
       },
       "routes": [
         {
-          "name": "RouteMain",
-          "pattern": "RouteMain",
+          "name": "RouteLaunchpad",
+          "pattern": "",
           "target": [
-            "TargetMain"
+            "TargetLaunchpad"
+          ]
+        },
+        {
+          "name": "RouteEmployees",
+          "pattern": "Employees",
+          "target": [
+            "TargetEmployees"
+          ]
+        },
+        {
+          "name": "RouteCreateEmployee",
+          "pattern": "CreateEmployee",
+          "target": [
+            "TargetCreateEmployee"
+          ]
+        },
+        {
+          "name": "RouteOrders",
+          "pattern": "Orders",
+          "target": [
+            "TargetOrders"
           ]
         }
       ],
       "targets": {
-        "TargetMain": {
+        "TargetLaunchpad": {
           "viewType": "XML",
           "transition": "slide",
           "clearControlAggregation": false,
-          "viewId": "Main",
-          "viewName": "Main"
+          "viewId": "Launchpad",
+          "viewName": "Launchpad"
+        },
+        "TargetEmployees": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "Employees",
+          "viewName": "Employees"
+        },
+        "TargetCreateEmployee": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "CreateEmployee",
+          "viewName": "CreateEmployee"
+        },
+        "TargetOrders": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "Orders",
+          "viewName": "Orders"
         }
       }
     }
