@@ -3,7 +3,9 @@
         xmlns:mvc="sap.ui.core.mvc"
         displayBlock="true"
         xmlns="sap.m"
-        xmlns:core="sap.ui.core">
+        xmlns:core="sap.ui.core"
+        xmlns:l="sap.ui.layout"
+	    xmlns:f="sap.ui.layout.form">
 
         <!-- Vista para crear los empleados -->
 
@@ -14,22 +16,105 @@
                 -->
                 <Wizard id="CreateEmployeeWizard" class="sapUiResponsivePadding--header sapUiResponsivePadding--content">
                     <!-- Paso 1: Tipo de empleado -->
-                    <WizardStep id="EmployeeTypeStep" title="{i18n>employeeType}">
+                    <WizardStep id="employeeTypeStep" title="{i18n>employeeType}">
                         <MessageStrip class="sapUiSmallMarginBottom"
                                         text="{i18n>employeeTypeMessageStrip}"
                                         showIcon="true"></MessageStrip>
                         <HBox alignItems="Center" justifyContent="Center" width="100%">
-                            <Button id="employeeType0" type="{jsonButtonType>/employeeType0}" icon="sap-icon://employee-pane" text="{i18n>intern}"
+                            <Button id="employeeType0" type="{jsonControlBehavior>/employeeType0}" icon="sap-icon://employee-pane" text="{i18n>intern}"
                                     class="sapUiSmallMarginEnd" press="onSelectEmployeeType"/>
-                            <Button id="employeeType1" type="{jsonButtonType>/employeeType1}" icon="sap-icon://employee" text="{i18n>freelancer}"
+                            <Button id="employeeType1" type="{jsonControlBehavior>/employeeType1}" icon="sap-icon://employee" text="{i18n>freelancer}"
                                     class="sapUiSmallMarginEnd" press="onSelectEmployeeType"/>
-                            <Button id="employeeType2" type="{jsonButtonType>/employeeType2}" icon="sap-icon://leads" text="{i18n>manager}"
+                            <Button id="employeeType2" type="{jsonControlBehavior>/employeeType2}" icon="sap-icon://leads" text="{i18n>manager}"
                                     press="onSelectEmployeeType"/>
                         </HBox>
                     </WizardStep>
                     <!-- Paso 2: Datos del empleado -->
-                    <WizardStep id="EmployeeDataStep" title="{i18n>employeeData}">
-
+                    <WizardStep id="employeeDataStep" title="{i18n>employeeData}">
+                        <MessageStrip class="sapUiSmallMarginBottom"
+                                        text="{i18n>employeeDataMessageStrip}"
+                                        showIcon="true"></MessageStrip>
+                        <VBox class="sapUiSmallMargin">
+                            <!-- Formulario para solicitar los datos del empleado -->
+                            <f:Form editable="true">
+                                <f:layout>
+                                    <f:ResponsiveGridLayout
+                                        labelSpanXL="4"
+                                        labelSpanL="3"
+                                        labelSpanM="4"
+                                        labelSpanS="12"
+                                        adjustLabelSpan="false"
+                                        emptySpanXL="0"
+                                        emptySpanL="4"
+                                        emptySpanM="0"
+                                        emptySpanS="0"
+                                        columnsXL="2"
+                                        columnsL="1"
+                                        columnsM="1"
+                                        singleContainerFullSize="false" />
+                                </f:layout>
+                                <f:formContainers>
+                                    <f:FormContainer >
+                                        <!-- Elementos del formulario -->
+                                        <f:formElements>
+                                            <!-- Input para el primer nombre: campo requerido -->
+                                            <f:FormElement label="{i18n>firstName}">
+                                                <f:fields>
+                                                    <Input required="true" id="employeefirstName" value="{jsonNewEmployee>/firstName}"
+                                                            change="updateFirstName" liveChange="true"
+                                                            valueState="{jsonControlBehavior>/firstNameState}" />
+                                                </f:fields>
+                                            </f:FormElement>
+                                            <!-- Input para el apellido: campo requerido -->
+                                            <f:FormElement label="{i18n>lastName}">
+                                                <f:fields>
+                                                    <Input required="true" id="employeelastName" value="{jsonNewEmployee>/lastName}"
+                                                            change="updateLastName" liveChange="true"
+                                                            valueState="{jsonControlBehavior>/lastNameState}" />
+                                                </f:fields>
+                                            </f:FormElement>
+                                            <!-- Input para el DNI: campo requerido -->
+                                            <f:FormElement label="{i18n>dni}">
+                                                <f:fields>
+                                                    <Input required="true" id="employeeDNI" value="{jsonNewEmployee>/dni}"
+                                                            change="updateDNI" liveChange="true"
+                                                            valueState="{jsonControlBehavior>/dniState}" />
+                                                </f:fields>
+                                            </f:FormElement>
+                                            <!-- Slider para salario bruto anual: visible para tipo interno y gerente -->
+                                            <f:FormElement label="{i18n>annualGrossSalary}" visible="{jsonControlBehavior>/annualSalaryVisible}">
+                                                <f:fields>
+                                                    <Slider id="annualGrossSalary"
+                                                        enableTickmarks="true"
+                                                        min="{jsonControlBehavior>/sliderMinValue}"
+                                                        max="{jsonControlBehavior>/sliderMaxValue}"
+                                                        step="{jsonControlBehavior>/sliderStep}"
+                                                        value="{jsonNewEmployee>/annualSalary}"
+                                                        class="sapUiLargeMarginBottom" width="100%" />
+                                                </f:fields>
+                                            </f:FormElement>
+                                            <!-- Slider para precio diario: visible para tipo autónomo -->
+                                            <f:FormElement label="{i18n>dailyPrice}" visible="{jsonControlBehavior>/dailyPriceVisible}">
+                                                <f:fields>
+                                                    <Slider id="dailyPrice"
+                                                        enableTickmarks="true"
+                                                        min="{jsonControlBehavior>/sliderMinValue}"
+                                                        max="{jsonControlBehavior>/sliderMaxValue}"
+                                                        step="{jsonControlBehavior>/sliderStep}"
+                                                        value="{jsonNewEmployee>/dailyPrice}"
+                                                        class="sapUiLargeMarginBottom" width="100%"/>
+                                                </f:fields>
+                                            </f:FormElement>
+                                        </f:formElements>
+                                    </f:FormContainer>
+                                </f:formContainers>
+                            </f:Form>
+                        </VBox>
+                    </WizardStep>
+                    <WizardStep id="employeeAdditionalStep" title="{i18n>employeeAdditional}">
+                        <MessageStrip class="sapUiSmallMarginBottom"
+                                        text="{i18n>employeeAdditionalMessageStrip}"
+                                        showIcon="true"></MessageStrip>
                     </WizardStep>
                 </Wizard>
                 
