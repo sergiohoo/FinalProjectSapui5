@@ -17,14 +17,16 @@ sap.ui.define([
                 // y comportamiento de otros controles
                 var oView = this.getView();
                 var oJSONControlBehavior = new sap.ui.model.json.JSONModel({
+                    showNextButton: false,
+
                     employeeType0: 'Default',
                     employeeType1: 'Default',
                     employeeType2: 'Default',
 
-                    firstNameState: "None",
-                    lastNameState: "None",
-                    dniState: "None",
-                    incorporationDateState: "None",
+                    firstNameState: undefined,
+                    lastNameState: undefined,
+                    dniState: undefined,
+                    incorporationDateState: undefined,
                     
                     annualSalaryVisible: false,
                     dailyPriceVisible: false,
@@ -33,11 +35,11 @@ sap.ui.define([
                     sliderMaxValue: 0,
                     sliderStep: 1,
                 });
-                oView.setModel(oJSONControlBehavior, "jsonControlBehavior");
+                oView.setModel(oJSONControlBehavior, "ctrlBhvr");
 
                 // Crea un json con los datos del nuevo empleado
                 var oJSONNewEmployee = new sap.ui.model.json.JSONModel({
-                    type: '0',
+                    type: '',
                     firstName: '',
                     lastName: '',
                     dni: '',
@@ -45,7 +47,7 @@ sap.ui.define([
                     dailyPrice: 0,
                     incorporationDate: null,
                 });
-                oView.setModel(oJSONNewEmployee, "jsonNewEmployee");
+                oView.setModel(oJSONNewEmployee, "newEmply");
             },
 
             // Función que cancela la operación de crear un nuevo empleado
@@ -63,6 +65,37 @@ sap.ui.define([
                 });
             },
 
+            // Función que oculta el botón "Siguiente" del wizard
+            // Se llama en el evento "activate" de cada paso
+            hideNextButton: function () {
+                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
+                mCtrlBhv.setProperty("/showNextButton", false);
+            },
+
+            showNextButton: function () {
+                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
+                mCtrlBhv.setProperty("/showNextButton", true);
+            },
+
+            checkReqFieldsStepTwo: function () {
+                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
+
+                var firstNameState = mCtrlBhv.getProperty("/firstNameState");
+                var lastNameState = mCtrlBhv.getProperty("/lastNameState");
+                var dniState = mCtrlBhv.getProperty("/dniState");
+                var incorporationDateState = mCtrlBhv.getProperty("/incorporationDateState");
+
+                if (firstNameState !== "None" ||
+                    lastNameState !== "None" ||
+                    dniState !== "None" ||
+                    incorporationDateState !== "None") {
+                        this.hideNextButton();
+                    }
+                else {
+                    this.showNextButton();
+                }
+            },
+
             // Función que captura el tipo de empleado seleccionado
             onSelectEmployeeType: function (oEvent) {
                 // Obtiene el tipo de empleado desde el id del botón
@@ -70,15 +103,21 @@ sap.ui.define([
                 var employeeType = sId.substr(sId.length - 1)
 
                 // Guarda el tipo de emplado seleccionado en el modelo json
-                var mEmployee = this.getView().getModel("jsonNewEmployee");
+                var mEmployee = this.getView().getModel("newEmply");
                 mEmployee.setProperty("/type", employeeType);
 
                 // Destaca el botón del tipo de empleado seleccionado
-                var mCtrlBhv = this.getView().getModel("jsonControlBehavior");
+                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
                 mCtrlBhv.setProperty("/employeeType0", "Default");
                 mCtrlBhv.setProperty("/employeeType1", "Default");
                 mCtrlBhv.setProperty("/employeeType2", "Default");
                 mCtrlBhv.setProperty("/employeeType" + employeeType, "Emphasized");
+
+                // Hace visible el botón "Siguiente"
+                // Para ir al siguiente paso del wizard
+                if(employeeType != "") {
+                    mCtrlBhv.setProperty("/showNextButton", true);
+                }
 
                 // En función del tipo de empleado seleccionado
                 // oculta o muestra los slider de sueldo anual o precio diario
@@ -128,7 +167,7 @@ sap.ui.define([
             },
 
             updateFirstName: function (oEvent) {
-                var mCtrlBhv = this.getView().getModel("jsonControlBehavior");
+                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
 
                 if (!oEvent.getSource().getValue()) {
                     mCtrlBhv.setProperty("/firstNameState", "Error");
@@ -137,10 +176,14 @@ sap.ui.define([
                 }
 
                 mCtrlBhv.refresh(true);
+
+                // Chequea el estado de los campos
+                // para mostrar u ocultar el botón "Siguiente" del wizard
+                this.checkReqFieldsStepTwo();
             },
 
             updateLastName: function (oEvent) {
-                var mCtrlBhv = this.getView().getModel("jsonControlBehavior");
+                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
 
                 if (!oEvent.getSource().getValue()) {
                     mCtrlBhv.setProperty("/lastNameState", "Error");
@@ -149,10 +192,14 @@ sap.ui.define([
                 }
 
                 mCtrlBhv.refresh(true);
+
+                // Chequea el estado de los campos
+                // para mostrar u ocultar el botón "Siguiente" del wizard
+                this.checkReqFieldsStepTwo();
             },
 
             updateDNI: function (oEvent) {
-                var mCtrlBhv = this.getView().getModel("jsonControlBehavior");
+                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
 
                 if (!oEvent.getSource().getValue()) {
                     mCtrlBhv.setProperty("/dniState", "Error");
@@ -161,6 +208,30 @@ sap.ui.define([
                 }
 
                 mCtrlBhv.refresh(true);
+
+                // Chequea el estado de los campos
+                // para mostrar u ocultar el botón "Siguiente" del wizard
+                this.checkReqFieldsStepTwo();
+            },
+
+            updateIncorporationDate: function (oEvent) {
+                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
+
+                if (!oEvent.getSource().getValue()) {
+                    mCtrlBhv.setProperty("/incorporationDateState", "Error");
+                } else {
+                    if (!oEvent.getSource().isValidValue()) {
+                        mCtrlBhv.setProperty("/incorporationDateState", "Error");
+                    } else {
+                        mCtrlBhv.setProperty("/incorporationDateState", "None");
+                    }
+                }
+
+                mCtrlBhv.refresh(true);
+
+                // Chequea el estado de los campos
+                // para mostrar u ocultar el botón "Siguiente" del wizard
+                this.checkReqFieldsStepTwo();
             }
         });
     });
