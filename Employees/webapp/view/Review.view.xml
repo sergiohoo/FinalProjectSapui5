@@ -1,0 +1,11 @@
+<mvc:View
+        controllerName="hr.Employees.controller.Review"
+        xmlns:mvc="sap.ui.core.mvc"
+        displayBlock="true"
+        xmlns="sap.m"
+        xmlns:core="sap.ui.core"
+        xmlns:l="sap.ui.layout"
+	    xmlns:f="sap.ui.layout.form">
+
+        
+</mvc:View>

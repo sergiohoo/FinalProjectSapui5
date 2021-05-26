@@ -13,6 +13,11 @@ sap.ui.define([
 
         return Controller.extend("hr.Employees.controller.CreateEmployee", {
             onInit: function () {
+                // Identifica elementos dentro de la vista
+                this._wizard = this.byId("createEmployeeWizard");
+                this._oNavContainer = this.byId("wizardNavContainer");
+                this._oWizardContentPage = this.byId("wizardContentPage");
+
                 // Crea un json para la visualización de los botones
                 // y comportamiento de otros controles
                 var oView = this.getView();
@@ -46,6 +51,7 @@ sap.ui.define([
                     annualSalary: 0,
                     dailyPrice: 0,
                     incorporationDate: null,
+                    comments: ''
                 });
                 oView.setModel(oJSONNewEmployee, "newEmply");
             },
@@ -65,19 +71,76 @@ sap.ui.define([
                 });
             },
 
+            // Función que guarda el empleado y el primer salario
+            // con los datos que se insertaron en el wizard
+            onSaveEmployee: function () {
+                var mEmployee = this.getView().getModel("newEmply");
+                var type = mEmployee.getProperty("/type");
+                var salaryAmmout = "0";
+                if ( type === "0" || type === "2") {
+                    salaryAmmout = mEmployee.getProperty("/annualSalary");
+                } else if (type === "1") {
+                    salaryAmmout = mEmployee.getProperty("/dailyPrice");
+                }
+
+                // Crea el cuerpo del usuario que se creará
+                // http://erp13.sap4practice.com:9037/sap/opu/odata/sap/ZEMPLOYEES_SRV/Users/?$format=json
+                // http://erp13.sap4practice.com:9037/sap/opu/odata/sap/ZEMPLOYEES_SRV/Salaries/?$format=json
+                var bodyEmployee = {
+                    EmployeeId: "001",
+                    SapId: this.getOwnerComponent().SapId,
+                    Type: mEmployee.getProperty("/type"),
+                    FirstName: mEmployee.getProperty("/firstName"),
+                    LastName: mEmployee.getProperty("/lastName"),
+                    Dni: mEmployee.getProperty("/dni"),
+                    CreationDate: mEmployee.getProperty("/incorporationDate"),
+                    Comments: mEmployee.getProperty("/comments"),
+                }
+                this.getView().getModel("odataEmployees").create("/Users", bodyEmployee, {
+                    success: function (res) {
+                        var employeeId = res.EmployeeId;
+                        
+                        var bodySalary = {
+                            SapId: this.getOwnerComponent().SapId,
+                            EmployeeId: employeeId.toString(),
+                            CreationDate: mEmployee.getProperty("/incorporationDate"),
+                            Ammount: salaryAmmout,
+                            Waers: "EUR",
+                            Comments: mEmployee.getProperty("/comments")
+                        }
+
+                        this.getView().getModel("odataEmployees").create("/Salaries", bodySalary, {
+                            success: function (resSal) {
+                                console.log(resSal);
+                            }.bind(this),
+                            error: function (e) {
+                                console.log(e.Message);
+                            }.bind(this)
+
+                        });
+                    }.bind(this),
+                    error: function (e) {
+
+                    }.bind(this)
+                });
+            },
+
             // Función que oculta el botón "Siguiente" del wizard
             // Se llama en el evento "activate" de cada paso
-            hideNextButton: function () {
+            _hideNextButton: function () {
                 var mCtrlBhv = this.getView().getModel("ctrlBhvr");
                 mCtrlBhv.setProperty("/showNextButton", false);
             },
 
-            showNextButton: function () {
+            // Función que muestra el botón "Siguiente" del wizard
+            _showNextButton: function () {
                 var mCtrlBhv = this.getView().getModel("ctrlBhvr");
                 mCtrlBhv.setProperty("/showNextButton", true);
             },
 
-            checkReqFieldsStepTwo: function () {
+            // Función auxiliar que muestra u oculta el botón "Siguiente"
+            // dependiendo del estado de los campos requeridos
+            _checkReqFieldsStepTwo: function () {
                 var mCtrlBhv = this.getView().getModel("ctrlBhvr");
 
                 var firstNameState = mCtrlBhv.getProperty("/firstNameState");
@@ -89,14 +152,16 @@ sap.ui.define([
                     lastNameState !== "None" ||
                     dniState !== "None" ||
                     incorporationDateState !== "None") {
-                        this.hideNextButton();
+                        this._hideNextButton();
                     }
                 else {
-                    this.showNextButton();
+                    this._showNextButton();
                 }
             },
 
             // Función que captura el tipo de empleado seleccionado
+            // y actualiza el estado de los botones de tipo
+            // y de los sliders de salario del paso siguiente
             onSelectEmployeeType: function (oEvent) {
                 // Obtiene el tipo de empleado desde el id del botón
                 var sId = oEvent.getSource().sId;
@@ -134,7 +199,7 @@ sap.ui.define([
                     // Setea el valor del slider
                     // Usa setValue porque no bastó con binding
                     mEmployee.setProperty("/annualSalary", 24000);
-                    this.getView().byId("annualGrossSalary").setValue(24000);
+                    this.getView().byId("annualSalary").setValue(24000);
 
                 } else if (employeeType === "1") {
                     mCtrlBhv.setProperty("/annualSalaryVisible", false);
@@ -162,10 +227,12 @@ sap.ui.define([
                     // Setea el valor del slider
                     // Usa setValue porque no bastó con binding
                     mEmployee.setProperty("/annualSalary", 70000);
-                    this.getView().byId("annualGrossSalary").setValue(70000);
+                    this.getView().byId("annualSalary").setValue(70000);
                 }
             },
 
+            // Función que se ejecuta en el evento change del campo firstName
+            // y actualiza su estado
             updateFirstName: function (oEvent) {
                 var mCtrlBhv = this.getView().getModel("ctrlBhvr");
 
@@ -179,9 +246,11 @@ sap.ui.define([
 
                 // Chequea el estado de los campos
                 // para mostrar u ocultar el botón "Siguiente" del wizard
-                this.checkReqFieldsStepTwo();
+                this._checkReqFieldsStepTwo();
             },
 
+            // Función que se ejecuta en el evento change del campo lastName
+            // y actualiza su estado
             updateLastName: function (oEvent) {
                 var mCtrlBhv = this.getView().getModel("ctrlBhvr");
 
@@ -195,25 +264,62 @@ sap.ui.define([
 
                 // Chequea el estado de los campos
                 // para mostrar u ocultar el botón "Siguiente" del wizard
-                this.checkReqFieldsStepTwo();
+                this._checkReqFieldsStepTwo();
             },
 
+            // Función que se ejecuta en el evento change del campo dni
+            // y actualiza su estado
             updateDNI: function (oEvent) {
                 var mCtrlBhv = this.getView().getModel("ctrlBhvr");
 
                 if (!oEvent.getSource().getValue()) {
                     mCtrlBhv.setProperty("/dniState", "Error");
                 } else {
-                    mCtrlBhv.setProperty("/dniState", "None");
+                    if(this._checkDNI(oEvent.getSource().getValue())) {
+                        mCtrlBhv.setProperty("/dniState", "None");
+                    } else {
+                        mCtrlBhv.setProperty("/dniState", "Error");
+                    }
                 }
 
                 mCtrlBhv.refresh(true);
 
                 // Chequea el estado de los campos
                 // para mostrar u ocultar el botón "Siguiente" del wizard
-                this.checkReqFieldsStepTwo();
+                this._checkReqFieldsStepTwo();
             },
 
+            // Comprueba si un DNI español es válido
+            // y devuelve true o false si es correcto o no.
+            _checkDNI: function (dni) {
+                var number;
+                var letter;
+                var letterList;
+                var regularExp = /^\d{8}[a-zA-Z]$/;
+                // Se comprueba que el formato es válido
+                if (regularExp.test (dni) === true) {
+                    // Número
+                    number = dni.substr(0,dni.length-1);
+                    // Letra
+                    letter = dni.substr(dni.length-1,1);
+                    number = number % 23;
+                    letterList="TRWAGMYFPDXBNJZSQVHLCKET";
+                    letterList=letterList.substring(number,number+1);
+                    if (letterList !== letter.toUpperCase()) {
+                        // Error
+                        return false
+                    } else {
+                        // Correct
+                        return true
+                }
+                }else{
+                    // Error
+                    return false
+                }
+            }
+
+            // Función que se ejecuta en el evento change del campo incorporationDate
+            // y actualiza su estado
             updateIncorporationDate: function (oEvent) {
                 var mCtrlBhv = this.getView().getModel("ctrlBhvr");
 
@@ -231,7 +337,56 @@ sap.ui.define([
 
                 // Chequea el estado de los campos
                 // para mostrar u ocultar el botón "Siguiente" del wizard
-                this.checkReqFieldsStepTwo();
-            }
+                this._checkReqFieldsStepTwo();
+            },
+
+
+            // Como referencia, las siguientes 6 funciones fueron tomadas de:
+            // https://sapui5.hana.ondemand.com/#/entity/sap.m.Wizard/sample/sap.m.sample.Wizard/code/view/Wizard.view.xml
+
+
+            // Función que se ejecuta al completar el wizard
+            // y presioanr el botón "Revisar"
+            // redirecciona al resumen de los datos ingresados
+            wizardCompletedHandler: function () {
+			    this._oNavContainer.to(this.byId("wizardReviewPage"));
+            },
+
+            // Función que se ejecuta al final después de presionar "Edit"
+            // en alguno de los pasos del resumen
+            // para retornar al wizard
+            backToWizardContent: function () {
+			    this._oNavContainer.backToPage(this._oWizardContentPage.getId());
+		    },
+            
+            // Función que va de regreso al paso 1 del wizard
+            // desde el resumen
+            editStepOne: function () {
+                this._handleNavigationToStep(0);
+            },
+
+            // Función que va de regreso al paso 2 del wizard
+            // desde el resumen
+            editStepTwo: function () {
+                this._handleNavigationToStep(1);
+            },
+
+            // Función que va de regreso al paso 3 del wizard
+            // desde el resumen
+            editStepThree: function () {
+                this._handleNavigationToStep(2);
+            },
+
+            // Función auxiliar para volver al wizard
+            _handleNavigationToStep: function (iStepNumber) {
+                var fnAfterNavigate = function () {
+                    this._wizard.goToStep(this._wizard.getSteps()[iStepNumber]);
+                    this._oNavContainer.detachAfterNavigate(fnAfterNavigate);
+                }.bind(this);
+
+                this._oNavContainer.attachAfterNavigate(fnAfterNavigate);
+                this.backToWizardContent();
+            },
+
         });
     });

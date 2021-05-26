@@ -7,135 +7,237 @@
         xmlns:l="sap.ui.layout"
 	    xmlns:f="sap.ui.layout.form">
 
-        <!-- Vista para crear los empleados -->
-
-        <Page title="{i18n>createEmployee}">
-            <content>
-                <!-- Wizard para ingresar los
-                        datos del empleado
-                -->
-                <Wizard id="CreateEmployeeWizard" class="sapUiResponsivePadding--header sapUiResponsivePadding--content"
-                            showNextButton="{ctrlBhvr>/showNextButton}">
-                    <!-- Paso 1: Tipo de empleado -->
-                    <WizardStep id="employeeTypeStep" title="{i18n>employeeType}" activate="hideNextButton">
-                        <MessageStrip class="sapUiSmallMarginBottom"
-                                        text="{i18n>employeeTypeMessageStrip}"
-                                        showIcon="true"></MessageStrip>
-                        <HBox alignItems="Center" justifyContent="Center" width="100%">
-                            <Button id="employeeType0" type="{ctrlBhvr>/employeeType0}" icon="sap-icon://employee-pane" text="{i18n>intern}"
-                                    class="sapUiSmallMarginEnd" press="onSelectEmployeeType"/>
-                            <Button id="employeeType1" type="{ctrlBhvr>/employeeType1}" icon="sap-icon://employee" text="{i18n>freelancer}"
-                                    class="sapUiSmallMarginEnd" press="onSelectEmployeeType"/>
-                            <Button id="employeeType2" type="{ctrlBhvr>/employeeType2}" icon="sap-icon://leads" text="{i18n>manager}"
-                                    press="onSelectEmployeeType"/>
-                        </HBox>
-                    </WizardStep>
-                    <!-- Paso 2: Datos del empleado -->
-                    <WizardStep id="employeeDataStep" title="{i18n>employeeData}" activate="hideNextButton">
-                        <MessageStrip class="sapUiSmallMarginBottom"
-                                        text="{i18n>employeeDataMessageStrip}"
-                                        showIcon="true"></MessageStrip>
-                        <VBox class="sapUiSmallMargin">
-                            <!-- Formulario para solicitar los datos del empleado -->
+    <NavContainer id="wizardNavContainer">	
+        <pages>
+            <!-- Vista para crear los empleados -->
+            <Page id="wizardContentPage" title="{i18n>createEmployee}">
+                <content>
+                    <!-- Wizard para ingresar los
+                            datos del empleado
+                    -->
+                    <Wizard id="createEmployeeWizard" class="sapUiResponsivePadding--header sapUiResponsivePadding--content"
+                                showNextButton="{ctrlBhvr>/showNextButton}" complete="wizardCompletedHandler">
+                        <!-- Paso 1: Tipo de empleado -->
+                        <WizardStep id="employeeTypeStep" title="{i18n>employeeType}" activate="hideNextButton">
+                            <MessageStrip class="sapUiSmallMarginBottom"
+                                            text="{i18n>employeeTypeMessageStrip}"
+                                            showIcon="true"></MessageStrip>
+                            <HBox alignItems="Center" justifyContent="Center" width="100%">
+                                <Button id="employeeType0" type="{ctrlBhvr>/employeeType0}" icon="sap-icon://employee-pane" text="{i18n>intern}"
+                                        class="sapUiSmallMarginEnd" press="onSelectEmployeeType"/>
+                                <Button id="employeeType1" type="{ctrlBhvr>/employeeType1}" icon="sap-icon://employee" text="{i18n>freelancer}"
+                                        class="sapUiSmallMarginEnd" press="onSelectEmployeeType"/>
+                                <Button id="employeeType2" type="{ctrlBhvr>/employeeType2}" icon="sap-icon://leads" text="{i18n>manager}"
+                                        press="onSelectEmployeeType"/>
+                            </HBox>
+                        </WizardStep>
+                        <!-- Paso 2: Datos del empleado -->
+                        <WizardStep id="employeeDataStep" title="{i18n>employeeData}" activate="hideNextButton">
+                            <MessageStrip class="sapUiSmallMarginBottom"
+                                            text="{i18n>employeeDataMessageStrip}"
+                                            showIcon="true"></MessageStrip>
+                            <VBox class="sapUiSmallMargin">
+                                <!-- Formulario para solicitar los datos del empleado -->
+                                <f:Form editable="true">
+                                    <f:layout>
+                                        <f:ResponsiveGridLayout
+                                            labelSpanXL="4"
+                                            labelSpanL="3"
+                                            labelSpanM="4"
+                                            labelSpanS="12"
+                                            adjustLabelSpan="false"
+                                            emptySpanXL="0"
+                                            emptySpanL="4"
+                                            emptySpanM="0"
+                                            emptySpanS="0"
+                                            columnsXL="2"
+                                            columnsL="1"
+                                            columnsM="1"
+                                            singleContainerFullSize="false" />
+                                    </f:layout>
+                                    <f:formContainers>
+                                        <f:FormContainer >
+                                            <!-- Elementos del formulario -->
+                                            <f:formElements>
+                                                <!-- Input para el primer nombre: campo requerido -->
+                                                <f:FormElement label="{i18n>firstName}">
+                                                    <f:fields>
+                                                        <Input required="true" id="employeefirstName" value="{newEmply>/firstName}"
+                                                                change="updateFirstName" liveChange="true"
+                                                                valueState="{ctrlBhvr>/firstNameState}" />
+                                                    </f:fields>
+                                                </f:FormElement>
+                                                <!-- Input para el apellido: campo requerido -->
+                                                <f:FormElement label="{i18n>lastName}">
+                                                    <f:fields>
+                                                        <Input required="true" id="employeelastName" value="{newEmply>/lastName}"
+                                                                change="updateLastName" liveChange="true"
+                                                                valueState="{ctrlBhvr>/lastNameState}" />
+                                                    </f:fields>
+                                                </f:FormElement>
+                                                <!-- Input para el DNI: campo requerido -->
+                                                <f:FormElement label="{i18n>dni}">
+                                                    <f:fields>
+                                                        <Input required="true" id="employeeDNI" value="{newEmply>/dni}"
+                                                                change="updateDNI" liveChange="true"
+                                                                valueState="{ctrlBhvr>/dniState}" />
+                                                    </f:fields>
+                                                </f:FormElement>
+                                                <!-- Slider para salario bruto anual: visible para tipo interno y gerente -->
+                                                <f:FormElement label="{i18n>annualSalary}" visible="{ctrlBhvr>/annualSalaryVisible}">
+                                                    <f:fields>
+                                                        <Slider id="annualSalary"
+                                                            enableTickmarks="true"
+                                                            min="{ctrlBhvr>/sliderMinValue}"
+                                                            max="{ctrlBhvr>/sliderMaxValue}"
+                                                            step="{ctrlBhvr>/sliderStep}"
+                                                            value="{newEmply>/annualSalary}"
+                                                            class="sapUiLargeMarginBottom" width="100%" />
+                                                    </f:fields>
+                                                </f:FormElement>
+                                                <!-- Slider para precio diario: visible para tipo autónomo -->
+                                                <f:FormElement label="{i18n>dailyPrice}" visible="{ctrlBhvr>/dailyPriceVisible}">
+                                                    <f:fields>
+                                                        <Slider id="dailyPrice"
+                                                            enableTickmarks="true"
+                                                            min="{ctrlBhvr>/sliderMinValue}"
+                                                            max="{ctrlBhvr>/sliderMaxValue}"
+                                                            step="{ctrlBhvr>/sliderStep}"
+                                                            value="{newEmply>/dailyPrice}"
+                                                            class="sapUiLargeMarginBottom" width="100%"/>
+                                                    </f:fields>
+                                                </f:FormElement>
+                                                <!-- Input para la fecha de incorporación: campo requerido -->
+                                                <f:FormElement label="{i18n>incorporationDate}">
+                                                    <f:fields>
+                                                        <DatePicker required="true" id="incorporationDate"
+                                                                dateValue="{newEmply>/incorporationDate}"
+                                                                change="updateIncorporationDate"
+                                                                valueState="{ctrlBhvr>/incorporationDateState}" />
+                                                    </f:fields>
+                                                </f:FormElement>
+                                            </f:formElements>
+                                        </f:FormContainer>
+                                    </f:formContainers>
+                                </f:Form>
+                            </VBox>
+                        </WizardStep>
+                        <WizardStep id="employeeAdditionalStep" title="{i18n>employeeAdditional}" activate="showNextButton">
+                            <MessageStrip class="sapUiSmallMarginBottom"
+                                            text="{i18n>employeeAdditionalMessageStrip}"
+                                            showIcon="true"></MessageStrip>
                             <f:Form editable="true">
-                                <f:layout>
-                                    <f:ResponsiveGridLayout
-                                        labelSpanXL="4"
-                                        labelSpanL="3"
-                                        labelSpanM="4"
-                                        labelSpanS="12"
-                                        adjustLabelSpan="false"
-                                        emptySpanXL="0"
-                                        emptySpanL="4"
-                                        emptySpanM="0"
-                                        emptySpanS="0"
-                                        columnsXL="2"
-                                        columnsL="1"
-                                        columnsM="1"
-                                        singleContainerFullSize="false" />
-                                </f:layout>
-                                <f:formContainers>
-                                    <f:FormContainer >
-                                        <!-- Elementos del formulario -->
-                                        <f:formElements>
-                                            <!-- Input para el primer nombre: campo requerido -->
-                                            <f:FormElement label="{i18n>firstName}">
-                                                <f:fields>
-                                                    <Input required="true" id="employeefirstName" value="{newEmply>/firstName}"
-                                                            change="updateFirstName" liveChange="true"
-                                                            valueState="{ctrlBhvr>/firstNameState}" />
-                                                </f:fields>
-                                            </f:FormElement>
-                                            <!-- Input para el apellido: campo requerido -->
-                                            <f:FormElement label="{i18n>lastName}">
-                                                <f:fields>
-                                                    <Input required="true" id="employeelastName" value="{newEmply>/lastName}"
-                                                            change="updateLastName" liveChange="true"
-                                                            valueState="{ctrlBhvr>/lastNameState}" />
-                                                </f:fields>
-                                            </f:FormElement>
-                                            <!-- Input para el DNI: campo requerido -->
-                                            <f:FormElement label="{i18n>dni}">
-                                                <f:fields>
-                                                    <Input required="true" id="employeeDNI" value="{newEmply>/dni}"
-                                                            change="updateDNI" liveChange="true"
-                                                            valueState="{ctrlBhvr>/dniState}" />
-                                                </f:fields>
-                                            </f:FormElement>
-                                            <!-- Slider para salario bruto anual: visible para tipo interno y gerente -->
-                                            <f:FormElement label="{i18n>annualGrossSalary}" visible="{ctrlBhvr>/annualSalaryVisible}">
-                                                <f:fields>
-                                                    <Slider id="annualGrossSalary"
-                                                        enableTickmarks="true"
-                                                        min="{ctrlBhvr>/sliderMinValue}"
-                                                        max="{ctrlBhvr>/sliderMaxValue}"
-                                                        step="{ctrlBhvr>/sliderStep}"
-                                                        value="{newEmply>/annualSalary}"
-                                                        class="sapUiLargeMarginBottom" width="100%" />
-                                                </f:fields>
-                                            </f:FormElement>
-                                            <!-- Slider para precio diario: visible para tipo autónomo -->
-                                            <f:FormElement label="{i18n>dailyPrice}" visible="{ctrlBhvr>/dailyPriceVisible}">
-                                                <f:fields>
-                                                    <Slider id="dailyPrice"
-                                                        enableTickmarks="true"
-                                                        min="{ctrlBhvr>/sliderMinValue}"
-                                                        max="{ctrlBhvr>/sliderMaxValue}"
-                                                        step="{ctrlBhvr>/sliderStep}"
-                                                        value="{newEmply>/dailyPrice}"
-                                                        class="sapUiLargeMarginBottom" width="100%"/>
-                                                </f:fields>
-                                            </f:FormElement>
-                                            <!-- Input para la fecha de incorporación: campo requerido -->
-                                            <f:FormElement label="{i18n>incorporationDate}">
-                                                <f:fields>
-                                                    <DatePicker required="true" id="incorporationDate"
-                                                            value="{newEmply>/incorporationDate}"
-                                                            change="updateIncorporationDate"
-                                                            valueState="{ctrlBhvr>/incorporationDateState}" />
-                                                </f:fields>
-                                            </f:FormElement>
-                                        </f:formElements>
-                                    </f:FormContainer>
-                                </f:formContainers>
-                            </f:Form>
-                        </VBox>
-                    </WizardStep>
-                    <WizardStep id="employeeAdditionalStep" title="{i18n>employeeAdditional}" activate="hideNextButton">
-                        <MessageStrip class="sapUiSmallMarginBottom"
-                                        text="{i18n>employeeAdditionalMessageStrip}"
-                                        showIcon="true"></MessageStrip>
-                    </WizardStep>
-                </Wizard>
-                
-            </content>
-            <footer>
-                <Toolbar >
-                    <ToolbarSpacer ></ToolbarSpacer>
-                    <!-- Botón para cancelar la operación y 
-                            volver al menú principal (launchpad) -->
-                    <Button text="{i18n>cancel}" press="onCancel"></Button>
-                </Toolbar>
-            </footer>
-        </Page>
+                                    <f:layout>
+                                        <f:ResponsiveGridLayout
+                                            labelSpanXL="4"
+                                            labelSpanL="3"
+                                            labelSpanM="4"
+                                            labelSpanS="12"
+                                            adjustLabelSpan="false"
+                                            emptySpanXL="0"
+                                            emptySpanL="4"
+                                            emptySpanM="0"
+                                            emptySpanS="0"
+                                            columnsXL="2"
+                                            columnsL="1"
+                                            columnsM="1"
+                                            singleContainerFullSize="false" />
+                                    </f:layout>
+                                    <f:formContainers>
+                                        <f:FormContainer >
+                                            <!-- Elementos del formulario del paso 3 -->
+                                            <f:formElements>
+                                                <!-- TextArea para incluir otros comentarios opcionales -->
+                                                <f:FormElement label="{i18n>comments}">
+                                                    <f:fields>
+                                                        <TextArea id="comments" value="{newEmply>/comments}"></TextArea>
+                                                    </f:fields>
+                                                </f:FormElement>
+                                            </f:formElements>
+                                        </f:FormContainer>
+                                    </f:formContainers>
+                                </f:Form>
+                        </WizardStep>
+                    </Wizard>
+                    
+                </content>
+                <footer>
+                    <Toolbar >
+                        <ToolbarSpacer ></ToolbarSpacer>
+                        <!-- Botón para cancelar la operación y 
+                                volver al menú principal (launchpad) -->
+                        <Button text="{i18n>cancel}" press="onCancel"></Button>
+                    </Toolbar>
+                </footer>
+            </Page>
+
+            <!-- Formulario resumen final después del wizard para revisar -->
+            <Page id="wizardReviewPage" title="{i18n>createEmployee}" showHeader="true">
+                <content>
+                    <!-- Resumen del paso 1 -->
+                    <f:SimpleForm title="1. {i18n>employeeType}" editable="false" layout="ResponsiveGridLayout">
+                        <f:content>
+                            <Label text="{i18n>employeeType}" />
+                            <!-- Filtra por tipo de empleado 
+                                    para mostrar el texto correcto -->
+                            <Text text="{= ${newEmply>/type} === '0' ? ${i18n>intern} :
+                                            ${newEmply>/type} === '1' ? ${i18n>freelancer} :
+                                            ${newEmply>/type} === '2' ? ${i18n>manager} : ''}" />
+                            
+                            <!-- Botón para volver al paso 1 del wizard -->
+                            <Link press="editStepOne" text="{i18n>edit}" />
+                        </f:content>
+                    </f:SimpleForm>
+
+                    <!-- Resumen del paso 2 -->
+                    <f:SimpleForm title="2. {i18n>employeeData}" editable="false" layout="ResponsiveGridLayout">
+                        <f:content>
+                            <Label text="{i18n>firstName}" />
+                            <Text text="{newEmply>/firstName}" />
+
+                            <Label text="{i18n>lastName}" />
+                            <Text text="{newEmply>/lastName}" />
+                            
+                            <Label text="{i18n>dni}" />
+                            <Text text="{newEmply>/dni}" />
+                            
+                            <Label text="{i18n>annualSalary}" />
+                            <!-- Filtra por tipo de empleado 
+                                    para mostrar el tipo de salario correcto -->
+                            <Text text="{= ${newEmply>/type} === '0' ? ${newEmply>/annualSalary} :
+                                            ${newEmply>/type} === '1' ? ${newEmply>/dailyPrice} :
+                                            ${newEmply>/type} === '2' ? ${newEmply>/annualSalary} : ''}" />
+                            
+                            <Label text="{i18n>incorporationDate}" />
+                            <Text text="{newEmply>/incorporationDate}" />
+
+                            <!-- Botón para volver al paso 2 del wizard -->
+                            <Link press="editStepTwo" text="{i18n>edit}" />
+                        </f:content>
+                    </f:SimpleForm>
+
+                    <!-- Resumen del paso 3 -->
+                    <f:SimpleForm title="1. {i18n>employeeAdditional}" editable="false" layout="ResponsiveGridLayout">
+                        <f:content>
+                            <Label text="{i18n>comments}" />
+                            <Text text="{newEmply>/comments}" />
+
+                            <!-- Botón para volver al paso 3 del wizard -->
+                            <Link press="editStepThree" text="{i18n>edit}" />
+                        </f:content>
+                    </f:SimpleForm>
+                </content>
+                <footer>
+                    <Toolbar >
+                        <ToolbarSpacer ></ToolbarSpacer>
+                        <!-- Botón para cancelar la operación y 
+                                volver al menú principal (launchpad) -->
+                        <Button text="{i18n>cancel}" press="onCancel"></Button>
+                        <!-- Botòn para guardar el nuevo empleado -->
+                        <Button text="{i18n>save}" press="onSaveEmployee"></Button>
+                    </Toolbar>
+                </footer>
+            </Page>
+        </pages>
+	</NavContainer>
 </mvc:View>
