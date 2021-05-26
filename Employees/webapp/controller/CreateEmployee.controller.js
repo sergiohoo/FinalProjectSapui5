@@ -44,6 +44,7 @@ sap.ui.define([
 
                 // Crea un json con los datos del nuevo empleado
                 var oJSONNewEmployee = new sap.ui.model.json.JSONModel({
+                    employeeId: 0,
                     type: '',
                     firstName: '',
                     lastName: '',
@@ -83,46 +84,68 @@ sap.ui.define([
                     salaryAmmout = mEmployee.getProperty("/dailyPrice");
                 }
 
-                // Crea el cuerpo del usuario que se creará
-                // http://erp13.sap4practice.com:9037/sap/opu/odata/sap/ZEMPLOYEES_SRV/Users/?$format=json
-                // http://erp13.sap4practice.com:9037/sap/opu/odata/sap/ZEMPLOYEES_SRV/Salaries/?$format=json
-                var bodyEmployee = {
-                    EmployeeId: "001",
-                    SapId: this.getOwnerComponent().SapId,
-                    Type: mEmployee.getProperty("/type"),
-                    FirstName: mEmployee.getProperty("/firstName"),
-                    LastName: mEmployee.getProperty("/lastName"),
-                    Dni: mEmployee.getProperty("/dni"),
-                    CreationDate: mEmployee.getProperty("/incorporationDate"),
-                    Comments: mEmployee.getProperty("/comments"),
-                }
-                this.getView().getModel("odataEmployees").create("/Users", bodyEmployee, {
+                // Obtienen el máximo EmployeeId desde el modelo OData
+                this.getView().getModel("odataEmployees").read("/Users",{
+                    filters: [
+                        new sap.ui.model.Filter("SapId", "EQ", this.getOwnerComponent().SapId)
+                    ],
                     success: function (res) {
-                        var employeeId = res.EmployeeId;
-                        
-                        var bodySalary = {
-                            SapId: this.getOwnerComponent().SapId,
-                            EmployeeId: employeeId.toString(),
-                            CreationDate: mEmployee.getProperty("/incorporationDate"),
-                            Ammount: salaryAmmout,
-                            Waers: "EUR",
-                            Comments: mEmployee.getProperty("/comments")
-                        }
-
-                        this.getView().getModel("odataEmployees").create("/Salaries", bodySalary, {
-                            success: function (resSal) {
-                                console.log(resSal);
-                            }.bind(this),
-                            error: function (e) {
-                                console.log(e.Message);
-                            }.bind(this)
-
+                        var eId = 0;
+                        res.results.forEach(el => {
+                            if(parseInt(el.EmployeeId) > eId) {
+                                eId = parseInt(el.EmployeeId);
+                                this.getView().getModel("newEmply").setProperty("/employeeId",parseInt(el.EmployeeId)+1);
+                                //eId = parseInt(el.EmployeeId);
+                            }
                         });
                     }.bind(this),
                     error: function (e) {
-
+                        console.log(e.Message);
                     }.bind(this)
                 });
+
+                console.log("eId:" + this.getView().getModel("newEmply").getProperty("/employeeId").toString());
+
+                // Crea el cuerpo del usuario que se creará
+                // http://erp13.sap4practice.com:9037/sap/opu/odata/sap/ZEMPLOYEES_SRV/Users/?$format=json
+                // http://erp13.sap4practice.com:9037/sap/opu/odata/sap/ZEMPLOYEES_SRV/Salaries/?$format=json
+                // var bodyEmployee = {
+                //     EmployeeId: "001",
+                //     SapId: this.getOwnerComponent().SapId,
+                //     Type: mEmployee.getProperty("/type"),
+                //     FirstName: mEmployee.getProperty("/firstName"),
+                //     LastName: mEmployee.getProperty("/lastName"),
+                //     Dni: mEmployee.getProperty("/dni"),
+                //     CreationDate: mEmployee.getProperty("/incorporationDate"),
+                //     Comments: mEmployee.getProperty("/comments"),
+                // }
+                // this.getView().getModel("odataEmployees").create("/Users", bodyEmployee, {
+                //     success: function (resUser) {
+                //         var employeeId = resUser.EmployeeId;
+                        
+                //         var bodySalary = {
+                //             SapId: this.getOwnerComponent().SapId,
+                //             EmployeeId: employeeId.toString(),
+                //             CreationDate: mEmployee.getProperty("/incorporationDate"),
+                //             Ammount: salaryAmmout,
+                //             Waers: "EUR",
+                //             Comments: mEmployee.getProperty("/comments")
+                //         }
+
+                //         this.getView().getModel("odataEmployees").create("/Salaries", bodySalary, {
+                //             success: function (resSalary) {
+                //                 console.log(resSalary);
+                //             }.bind(this),
+                //             error: function (e) {
+                //                 console.log(e.Message);
+                //             }.bind(this)
+
+                //         });
+                //     }.bind(this),
+                //     error: function (e) {
+
+                //     }.bind(this)
+                // });
             },
 
             // Función que oculta el botón "Siguiente" del wizard
@@ -316,7 +339,7 @@ sap.ui.define([
                     // Error
                     return false
                 }
-            }
+            },
 
             // Función que se ejecuta en el evento change del campo incorporationDate
             // y actualiza su estado

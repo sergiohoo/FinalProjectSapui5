@@ -166,7 +166,7 @@
                         <ToolbarSpacer ></ToolbarSpacer>
                         <!-- Botón para cancelar la operación y 
                                 volver al menú principal (launchpad) -->
-                        <Button text="{i18n>cancel}" press="onCancel"></Button>
+                        <Button text="{i18n>cancel}" press="onSaveEmployee"></Button>
                     </Toolbar>
                 </footer>
             </Page>
