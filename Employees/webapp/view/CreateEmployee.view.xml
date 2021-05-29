@@ -18,7 +18,7 @@
                     <Wizard id="createEmployeeWizard" class="sapUiResponsivePadding--header sapUiResponsivePadding--content"
                                 showNextButton="{ctrlBhvr>/showNextButton}" complete="wizardCompletedHandler">
                         <!-- Paso 1: Tipo de empleado -->
-                        <WizardStep id="employeeTypeStep" title="{i18n>employeeType}" activate="hideNextButton">
+                        <WizardStep id="employeeTypeStep" title="{i18n>employeeType}" activate="_hideNextButton">
                             <MessageStrip class="sapUiSmallMarginBottom"
                                             text="{i18n>employeeTypeMessageStrip}"
                                             showIcon="true"></MessageStrip>
@@ -32,7 +32,7 @@
                             </HBox>
                         </WizardStep>
                         <!-- Paso 2: Datos del empleado -->
-                        <WizardStep id="employeeDataStep" title="{i18n>employeeData}" activate="hideNextButton">
+                        <WizardStep id="employeeDataStep" title="{i18n>employeeData}" activate="_hideNextButton">
                             <MessageStrip class="sapUiSmallMarginBottom"
                                             text="{i18n>employeeDataMessageStrip}"
                                             showIcon="true"></MessageStrip>
@@ -122,7 +122,7 @@
                                 </f:Form>
                             </VBox>
                         </WizardStep>
-                        <WizardStep id="employeeAdditionalStep" title="{i18n>employeeAdditional}" activate="showNextButton">
+                        <WizardStep id="employeeAdditionalStep" title="{i18n>employeeAdditional}" activate="_showNextButton">
                             <MessageStrip class="sapUiSmallMarginBottom"
                                             text="{i18n>employeeAdditionalMessageStrip}"
                                             showIcon="true"></MessageStrip>
@@ -153,6 +153,20 @@
                                                         <TextArea id="comments" value="{newEmply>/comments}"></TextArea>
                                                     </f:fields>
                                                 </f:FormElement>
+                                                <f:FormElement>
+                                                    <f:fields>
+                                                        <UploadCollection id="attachment"
+                                                            maximumFilenameLength="55"
+                                                            maximumFileSize="10"
+                                                            multiple="false"
+                                                            sameFilenameAllowed="true"
+                                                            instantUpload="false"
+                                                            uploadUrl="/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments"
+                                                            change="_fileChange"
+                                                            uploadEnabled="true"
+                                                            beforeUploadStarts="_fileBeforeUpload"/>
+                                                    </f:fields>
+                                                </f:FormElement>
                                             </f:formElements>
                                         </f:FormContainer>
                                     </f:formContainers>
@@ -166,7 +180,7 @@
                         <ToolbarSpacer ></ToolbarSpacer>
                         <!-- Botón para cancelar la operación y 
                                 volver al menú principal (launchpad) -->
-                        <Button text="{i18n>cancel}" press="onSaveEmployee"></Button>
+                        <Button text="{i18n>cancel}" press="userCreated"></Button>
                     </Toolbar>
                 </footer>
             </Page>
@@ -234,7 +248,7 @@
                                 volver al menú principal (launchpad) -->
                         <Button text="{i18n>cancel}" press="onCancel"></Button>
                         <!-- Botòn para guardar el nuevo empleado -->
-                        <Button text="{i18n>save}" press="onSaveEmployee"></Button>
+                        <Button text="{i18n>save}" press="onInitSaveEmployee"></Button>
                     </Toolbar>
                 </footer>
             </Page>

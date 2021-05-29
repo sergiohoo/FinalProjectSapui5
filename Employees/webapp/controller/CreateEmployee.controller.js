@@ -72,9 +72,75 @@ sap.ui.define([
                 });
             },
 
-            // Función que guarda el empleado y el primer salario
-            // con los datos que se insertaron en el wizard
-            onSaveEmployee: function () {
+            // Función que inicia el proceso de guardar
+            // obteniendo primero el EmployeeId máximo + 1
+            onInitSaveEmployee: function () {
+                var mEmployee = this.getView().getModel("newEmply");
+
+                this.getView().getModel("odataEmployees").read("/Users", {
+                    filters: [
+                        new sap.ui.model.Filter("SapId", "EQ", this.getOwnerComponent().SapId)
+                    ],
+                    success: function (res) {
+                        var eId = 0;
+                        res.results.forEach(el => {
+                            // Obtiene el máximo EmployeeId desde el modelo OData
+                            // e incrementa en 1
+                            if(parseInt(el.EmployeeId) > eId) {
+                                eId = parseInt(el.EmployeeId);
+                                mEmployee.setProperty("/employeeId",eId+1);
+                            }
+                        });
+                        console.log("eId:" + mEmployee.getProperty("/employeeId").toString());
+                        // LLama a la función que inserta el nuevo usuario
+                        this._saveEmployee();
+                    }.bind(this),
+                    error: function (e) {
+                        // Si el mensaje indica que no hay usuarios
+                        // se asigna EmployeeId = 1
+                        //console.log(JSON.parse(e.responseText).error.message.value);
+                        if(JSON.parse(e.responseText).error.message.value === "No data found in backend") {
+                            mEmployee.setProperty("/employeeId",1);
+                            console.log("eId:" + mEmployee.getProperty("/employeeId").toString());
+                            // LLama a la función que inserta el nuevo usuario
+                            this._saveEmployee();
+                        }
+                    }.bind(this)
+                });
+            },
+
+            // Función que guarda el nuevo usuario
+            // y en success llama a la función _saveSalary
+            _saveEmployee: function () {
+                var mEmployee = this.getView().getModel("newEmply");
+
+                // Crea el cuerpo del usuario que se creará
+                // http://erp13.sap4practice.com:9037/sap/opu/odata/sap/ZEMPLOYEES_SRV/Users/?$format=json
+                var body = {
+                    EmployeeId: mEmployee.getProperty("/employeeId").toString(),
+                    SapId: this.getOwnerComponent().SapId,
+                    Type: mEmployee.getProperty("/type"),
+                    FirstName: mEmployee.getProperty("/firstName"),
+                    LastName: mEmployee.getProperty("/lastName"),
+                    Dni: mEmployee.getProperty("/dni"),
+                    CreationDate: mEmployee.getProperty("/incorporationDate"),
+                    Comments: mEmployee.getProperty("/comments"),
+                }
+                console.log(body);
+                this.getView().getModel("odataEmployees").create("/Users", body, {
+                    success: function (res) {
+                        console.log("success save employee");
+                        // Llama a la función que insertará el salario
+                        this._saveSalary();
+                    }.bind(this),
+                    error: function (e) {
+                        console.log("error save employee");
+                    }.bind(this)
+                });
+            },
+
+            // Función que guarda el salario
+            _saveSalary: function () {
                 var mEmployee = this.getView().getModel("newEmply");
                 var type = mEmployee.getProperty("/type");
                 var salaryAmmout = "0";
@@ -84,68 +150,73 @@ sap.ui.define([
                     salaryAmmout = mEmployee.getProperty("/dailyPrice");
                 }
 
-                // Obtienen el máximo EmployeeId desde el modelo OData
-                this.getView().getModel("odataEmployees").read("/Users",{
-                    filters: [
-                        new sap.ui.model.Filter("SapId", "EQ", this.getOwnerComponent().SapId)
-                    ],
+                // Crea el cuerpo del salario que se creará
+                // http://erp13.sap4practice.com:9037/sap/opu/odata/sap/ZEMPLOYEES_SRV/Salaries/?$format=json        
+                var bodySalary = {
+                    SapId: this.getOwnerComponent().SapId,
+                    EmployeeId: mEmployee.getProperty("/employeeId").toString(),
+                    CreationDate: mEmployee.getProperty("/incorporationDate"),
+                    Ammount: salaryAmmout.toString(),
+                    Waers: "EUR",
+                    Comments: mEmployee.getProperty("/comments")
+                }
+
+                this.getView().getModel("odataEmployees").create("/Salaries", bodySalary, {
                     success: function (res) {
-                        var eId = 0;
-                        res.results.forEach(el => {
-                            if(parseInt(el.EmployeeId) > eId) {
-                                eId = parseInt(el.EmployeeId);
-                                this.getView().getModel("newEmply").setProperty("/employeeId",parseInt(el.EmployeeId)+1);
-                                //eId = parseInt(el.EmployeeId);
-                            }
-                        });
+                        console.log("success save salary");
+                        // Llama a la función para subir ficheros
+                        this._uploadFile();
                     }.bind(this),
                     error: function (e) {
-                        console.log(e.Message);
+                        console.log("error save salary");
                     }.bind(this)
+
                 });
+            },
 
-                console.log("eId:" + this.getView().getModel("newEmply").getProperty("/employeeId").toString());
+            _userCreated: function() {
+                var oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+                var mEmployee = this.getView().getModel("newEmply");
+                MessageBox.information(oResourceBundle.getText("messageUserCreated",[mEmployee.getProperty("/employeeId").toString()]));
 
-                // Crea el cuerpo del usuario que se creará
-                // http://erp13.sap4practice.com:9037/sap/opu/odata/sap/ZEMPLOYEES_SRV/Users/?$format=json
-                // http://erp13.sap4practice.com:9037/sap/opu/odata/sap/ZEMPLOYEES_SRV/Salaries/?$format=json
-                // var bodyEmployee = {
-                //     EmployeeId: "001",
-                //     SapId: this.getOwnerComponent().SapId,
-                //     Type: mEmployee.getProperty("/type"),
-                //     FirstName: mEmployee.getProperty("/firstName"),
-                //     LastName: mEmployee.getProperty("/lastName"),
-                //     Dni: mEmployee.getProperty("/dni"),
-                //     CreationDate: mEmployee.getProperty("/incorporationDate"),
-                //     Comments: mEmployee.getProperty("/comments"),
-                // }
-                // this.getView().getModel("odataEmployees").create("/Users", bodyEmployee, {
-                //     success: function (resUser) {
-                //         var employeeId = resUser.EmployeeId;
-                        
-                //         var bodySalary = {
-                //             SapId: this.getOwnerComponent().SapId,
-                //             EmployeeId: employeeId.toString(),
-                //             CreationDate: mEmployee.getProperty("/incorporationDate"),
-                //             Ammount: salaryAmmout,
-                //             Waers: "EUR",
-                //             Comments: mEmployee.getProperty("/comments")
-                //         }
+                var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+                oRouter.navTo("");
+            },
 
-                //         this.getView().getModel("odataEmployees").create("/Salaries", bodySalary, {
-                //             success: function (resSalary) {
-                //                 console.log(resSalary);
-                //             }.bind(this),
-                //             error: function (e) {
-                //                 console.log(e.Message);
-                //             }.bind(this)
+            // FUNCIONES PARA SUBIR UN FICHERO
+            // Función que inicia el upload de ficheros
+            _uploadFile: function () {
+                var upload = this.getView().byId("attachment");
+                if(upload.getItems().length > 0) {
+                    upload.upload();
+                }
+                this._userCreated();
+            },
 
-                //         });
-                //     }.bind(this),
-                //     error: function (e) {
+            // Función que crea el slug y lo agrega al UploadCollection
+            _fileBeforeUpload: function (oEvent) {
+                var mEmployee = this.getView().getModel("newEmply");
+                let fileName = oEvent.getParameter("fileName");
+                // @ts-ignore
+                let oCustomerHeaderSlug = new sap.m.UploadCollectionParameter({
+                    name: "slug",
+                    value: this.getOwnerComponent().SapId + ";" + 
+                        mEmployee.getProperty("/employeeId").toString() + ";" + fileName
+                });
+                oEvent.getParameters().addHeaderParameter(oCustomerHeaderSlug);
+            },
 
-                //     }.bind(this)
-                // });
+            // Función que obtiene el token desde el modelo OData
+            // para subir el fichero
+            _fileChange: function (oEvent) {
+                let oUplodCollection = oEvent.getSource();
+                // Header Token CSRF - Cross-site request forgery
+                // @ts-ignore
+                let oCustomerHeaderToken = new sap.m.UploadCollectionParameter({
+                    name: "x-csrf-token",
+                    value: this.getView().getModel("odataEmployees").getSecurityToken()
+                });
+                oUplodCollection.addHeaderParameter(oCustomerHeaderToken);
             },
 
             // Función que oculta el botón "Siguiente" del wizard
