@@ -160,7 +160,7 @@ sap.ui.define([
                     Waers: "EUR",
                     Comments: mEmployee.getProperty("/comments")
                 }
-
+                // Inserta el salario del usuario en el modelo OData
                 this.getView().getModel("odataEmployees").create("/Salaries", bodySalary, {
                     success: function (res) {
                         console.log("success save salary");
@@ -174,16 +174,6 @@ sap.ui.define([
                 });
             },
 
-            _userCreated: function() {
-                var oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
-                var mEmployee = this.getView().getModel("newEmply");
-                MessageBox.information(oResourceBundle.getText("messageUserCreated",[mEmployee.getProperty("/employeeId").toString()]));
-
-                var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-                oRouter.navTo("");
-            },
-
-            // FUNCIONES PARA SUBIR UN FICHERO
             // Función que inicia el upload de ficheros
             _uploadFile: function () {
                 var upload = this.getView().byId("attachment");
@@ -193,8 +183,26 @@ sap.ui.define([
                 this._userCreated();
             },
 
+            // Función que se ejecuta al finalizar la creación de un usuario
+            _userCreated: function() {
+                var oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+                var mEmployee = this.getView().getModel("newEmply");
+
+                MessageBox.show(
+                    oResourceBundle.getText("messageUserCreated",[mEmployee.getProperty("/employeeId").toString()]), {
+                        icon: MessageBox.Icon.INFORMATION,
+                        title: oResourceBundle.getText("titleUserCreated"),
+                        actions: [MessageBox.Action.OK],
+                        onClose: function (oAction) {
+                            var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+                            oRouter.navTo("RouteLaunchpad");
+                        }.bind(this)
+                    }
+                );
+            },
+
             // Función que crea el slug y lo agrega al UploadCollection
-            _fileBeforeUpload: function (oEvent) {
+            onFileBeforeUpload: function (oEvent) {
                 var mEmployee = this.getView().getModel("newEmply");
                 let fileName = oEvent.getParameter("fileName");
                 // @ts-ignore
@@ -208,7 +216,7 @@ sap.ui.define([
 
             // Función que obtiene el token desde el modelo OData
             // para subir el fichero
-            _fileChange: function (oEvent) {
+            onFileChange: function (oEvent) {
                 let oUplodCollection = oEvent.getSource();
                 // Header Token CSRF - Cross-site request forgery
                 // @ts-ignore
@@ -217,40 +225,6 @@ sap.ui.define([
                     value: this.getView().getModel("odataEmployees").getSecurityToken()
                 });
                 oUplodCollection.addHeaderParameter(oCustomerHeaderToken);
-            },
-
-            // Función que oculta el botón "Siguiente" del wizard
-            // Se llama en el evento "activate" de cada paso
-            _hideNextButton: function () {
-                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
-                mCtrlBhv.setProperty("/showNextButton", false);
-            },
-
-            // Función que muestra el botón "Siguiente" del wizard
-            _showNextButton: function () {
-                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
-                mCtrlBhv.setProperty("/showNextButton", true);
-            },
-
-            // Función auxiliar que muestra u oculta el botón "Siguiente"
-            // dependiendo del estado de los campos requeridos
-            _checkReqFieldsStepTwo: function () {
-                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
-
-                var firstNameState = mCtrlBhv.getProperty("/firstNameState");
-                var lastNameState = mCtrlBhv.getProperty("/lastNameState");
-                var dniState = mCtrlBhv.getProperty("/dniState");
-                var incorporationDateState = mCtrlBhv.getProperty("/incorporationDateState");
-
-                if (firstNameState !== "None" ||
-                    lastNameState !== "None" ||
-                    dniState !== "None" ||
-                    incorporationDateState !== "None") {
-                        this._hideNextButton();
-                    }
-                else {
-                    this._showNextButton();
-                }
             },
 
             // Función que captura el tipo de empleado seleccionado
@@ -432,6 +406,40 @@ sap.ui.define([
                 // Chequea el estado de los campos
                 // para mostrar u ocultar el botón "Siguiente" del wizard
                 this._checkReqFieldsStepTwo();
+            },
+
+            // Función que oculta el botón "Siguiente" del wizard
+            // Se llama en el evento "activate" de cada paso
+            _hideNextButton: function () {
+                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
+                mCtrlBhv.setProperty("/showNextButton", false);
+            },
+
+            // Función que muestra el botón "Siguiente" del wizard
+            _showNextButton: function () {
+                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
+                mCtrlBhv.setProperty("/showNextButton", true);
+            },
+
+            // Función auxiliar que muestra u oculta el botón "Siguiente"
+            // dependiendo del estado de los campos requeridos
+            _checkReqFieldsStepTwo: function () {
+                var mCtrlBhv = this.getView().getModel("ctrlBhvr");
+
+                var firstNameState = mCtrlBhv.getProperty("/firstNameState");
+                var lastNameState = mCtrlBhv.getProperty("/lastNameState");
+                var dniState = mCtrlBhv.getProperty("/dniState");
+                var incorporationDateState = mCtrlBhv.getProperty("/incorporationDateState");
+
+                if (firstNameState !== "None" ||
+                    lastNameState !== "None" ||
+                    dniState !== "None" ||
+                    incorporationDateState !== "None") {
+                        this._hideNextButton();
+                    }
+                else {
+                    this._showNextButton();
+                }
             },
 
 

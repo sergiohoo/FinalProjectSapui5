@@ -1,0 +1,17 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m">
+        <Panel >
+            <Text text="{currEmply>/SapId}"></Text>
+            <List id="listEmployees" items="{path:'odataEmployees>/Users'}">
+                <headerToolbar>
+                    <OverflowToolbar>
+                        <Title
+                            text="{i18n>employeesList}" />
+                        <ToolbarSpacer />
+                    </OverflowToolbar>
+                </headerToolbar>
+                <StandardListItem
+                    title="{odataEmployees>LastName}, {odataEmployees>FirstName}"
+                    description="{odataEmployees>Dni}"/>
+            </List>
+        </Panel>
+</core:FragmentDefinition>

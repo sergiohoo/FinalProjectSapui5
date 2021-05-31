@@ -162,9 +162,9 @@
                                                             sameFilenameAllowed="true"
                                                             instantUpload="false"
                                                             uploadUrl="/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments"
-                                                            change="_fileChange"
+                                                            change="onFileChange"
                                                             uploadEnabled="true"
-                                                            beforeUploadStarts="_fileBeforeUpload"/>
+                                                            beforeUploadStarts="onFileBeforeUpload"/>
                                                     </f:fields>
                                                 </f:FormElement>
                                             </f:formElements>

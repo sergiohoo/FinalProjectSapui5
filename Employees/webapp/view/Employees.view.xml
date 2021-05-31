@@ -3,13 +3,33 @@
         xmlns:mvc="sap.ui.core.mvc"
         displayBlock="true"
         xmlns="sap.m"
-        xmlns:core="sap.ui.core">
+        xmlns:core="sap.ui.core"
+        xmlns:f="sap.f">
 
         <!-- Vista para ver los empleados -->
 
         <Page title="{i18n>employeesTitle}">
             <content>
-                <Text text="Emmployees"></Text>
+                <f:FlexibleColumnLayout id="fcl" backgroundDesign="Solid" layout="TwoColumnsBeginExpanded">
+                    <f:beginColumnPages>
+                        <Page id="leftPanel">
+                            <content>
+                                <core:Fragment fragmentName="hr.Employees.fragment.EmployeesLeftList" type="XML" />
+                            </content>
+                        </Page>
+                    </f:beginColumnPages>
+                    <f:midColumnPages>
+                        <Page >
+                            <content>
+                                <Text text="derecha" />
+                            </content>
+                        </Page>
+                    </f:midColumnPages>
+                    <f:endColumnPages>
+                        <Page >
+                        </Page>
+                    </f:endColumnPages>
+                </f:FlexibleColumnLayout>
             </content>
             <footer>
                 
