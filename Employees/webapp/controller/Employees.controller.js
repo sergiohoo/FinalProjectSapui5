@@ -12,24 +12,11 @@ sap.ui.define([
 		return Controller.extend("hr.Employees.controller.Employees", {
 			onInit: function () {
 
-                // Modelo del empleado que se está viendo
-                var oView = this.getView();
+                // Workaround para agregar el filtro SapId a la lista de empleados
+                // Referencia:
+                // https://stackoverflow.com/questions/26361334/sapui5-no-options-to-create-dynamic-filters-in-xml-views
                 var SapId = this.getOwnerComponent().SapId;
-                var oJSONCurrentEmployee = new sap.ui.model.json.JSONModel({
-                    SapId: this.getOwnerComponent().SapId,
-                    EmployeeId: 0,
-                    Type: '',
-                    FirstName: '',
-                    LastName: '',
-                    Dni: '',
-                    AnnualSalary: 0,
-                    DailyPrice: 0,
-                    CreationDate: null,
-                    Comments: ''
-                });
-                oView.setModel(oJSONCurrentEmployee, "currEmply");
-
-                oView.attachAfterRendering(function() {
+                this.getView().attachAfterRendering(function() {
                     var sValue1 = SapId;
                     var sPath = "SapId";
                     var sOperator = "EQ";
@@ -37,12 +24,15 @@ sap.ui.define([
                     var oBinding = this.byId("listEmployees").getBinding("items");
                     oBinding.filter([new sap.ui.model.Filter(sPath, sOperator, sValue1)]);
                 });
+            },
+            
+            onSelectEmployee: function (oEvent) {
+                var path = oEvent.getSource().getBindingContext("odataEmployees").getPath();
 
-                // var oFilter = new sap.ui.model.Filter("SapId", sap.ui.model.FilterOperator.EQ, this.getOwnerComponent().SapId);
+                var detailView = this.getView().byId("employeeDetailsView");
+                detailView.bindElement("odataEmployees>" + path);
 
-                // oView.byId("listEmployees").bindItems("odataEmployees>/Users",oFilter);
-                // var items = {path:'odataEmployees>/Users', filters:[{path:'SapId',operator:'EQ',value1:this.getOwnerComponent().SapId}]};
-                // listEmployees.items= items;
-			}
+                console.log(path);
+            }
 		});
 	});

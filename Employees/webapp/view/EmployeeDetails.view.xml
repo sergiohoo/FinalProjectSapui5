@@ -1,0 +1,79 @@
+<mvc:View
+        controllerName="hr.Employees.controller.EmployeeDetails"
+        xmlns:core="sap.ui.core"
+        xmlns:mvc="sap.ui.core.mvc"
+        displayBlock="true"
+        xmlns="sap.m">
+
+    <Page title="{i18n>employeeDetails}" visible="{= ${odataEmployees>Dni} !== null ? true : false}">
+        <content>
+            <Panel>
+                <FlexBox height="65px" alignItems="Start" justifyContent="Start">
+                    <items>
+                        <HBox>
+                            <!-- El icono depende del tipo de empleado -->
+                            <core:Icon class="sapUiSmallMarginEnd primaryColor" size="5rem"
+                                src="{= ${odataEmployees>Type}==='0' ? 'sap-icon://employee-pane' :
+                                   ${odataEmployees>Type}==='1' ? 'sap-icon://employee' :
+                                   ${odataEmployees>Type}==='2' ? 'sap-icon://leads' : 'sap-icon://empty'}"></core:Icon>
+                            <VBox>
+                                <Text text="{odataEmployees>FirstName} {odataEmployees>LastName}" class="boldText largeText" />
+                                <Text text="{odataEmployees>Dni}" class="mediumText"/>
+                            </VBox>
+                        </HBox>
+                    </items>
+                </FlexBox>
+            </Panel>
+            <Panel>
+                <FlexBox height="65px" alignItems="Start" justifyContent="SpaceBetween">
+                    <items>
+                        <VBox>
+                            <HBox>
+                                <Text text="{i18n>incorporationDate}:" class="boldText sapUiTinyMarginEnd" />
+                                <Text text="{odataEmployees>CreationDate}" />
+                            </HBox>
+                            <HBox>
+                                <Text text="{i18n>type}:" class="boldText sapUiTinyMarginEnd" />
+                                <Text text="{= ${odataEmployees>Type} === '0' ? ${i18n>intern} :
+                                            ${odataEmployees>Type} === '1' ? ${i18n>freelancer} :
+                                            ${odataEmployees>Type} === '2' ? ${i18n>manager} : ''}" />
+                            </HBox>
+                            <HBox>
+                                <Text text="{i18n>comments}:" class="boldText sapUiTinyMarginEnd" />
+                                <Text text="{odataEmployees>Comments}" />
+                            </HBox>
+                        </VBox>
+                    </items>
+                </FlexBox>
+            </Panel>
+
+            <Panel class="sapUiSizeCompact" backgroundDesign="Transparent">
+                <headerToolbar>
+                    <Toolbar>
+                        
+                    </Toolbar>
+                </headerToolbar>
+            </Panel>
+        </content>
+        <footer>
+            <Toolbar >
+                <ToolbarSpacer ></ToolbarSpacer>
+                <!-- Botón para dar de baja al empleado -->
+                <Button text="{i18n>dismiss}" press="onDismiss"></Button>
+                <!-- Botòn para ascender al empleado -->
+                <Button text="{i18n>promote}" press="onPromote"></Button>
+            </Toolbar>  
+        </footer>
+    </Page>
+    <Page showHeader="false" visible="{= ${odataEmployees>Dni} === null ? true : false}">
+        <content>
+            <FlexBox alignItems="Center" justifyContent="Center">
+                <items>
+                    <VBox height="100%" justifyContent="Center">
+                        <Text text="{i18n>youSelectEmployee}"></Text>
+                    </VBox>
+                </items>
+            </FlexBox>
+        </content>
+    </Page>
+</mvc:View>

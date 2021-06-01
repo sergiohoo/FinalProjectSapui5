@@ -10,20 +10,16 @@
 
         <Page title="{i18n>employeesTitle}">
             <content>
-                <f:FlexibleColumnLayout id="fcl" backgroundDesign="Solid" layout="TwoColumnsBeginExpanded">
+                <f:FlexibleColumnLayout id="fcl" backgroundDesign="Solid" layout="TwoColumnsMidExpanded">
                     <f:beginColumnPages>
-                        <Page id="leftPanel">
+                        <Page id="leftPanel" showHeader="false" showFooter="false">
                             <content>
                                 <core:Fragment fragmentName="hr.Employees.fragment.EmployeesLeftList" type="XML" />
                             </content>
                         </Page>
                     </f:beginColumnPages>
                     <f:midColumnPages>
-                        <Page >
-                            <content>
-                                <Text text="derecha" />
-                            </content>
-                        </Page>
+                        <mvc:XMLView id="employeeDetailsView" viewName="hr.Employees.view.EmployeeDetails"></mvc:XMLView>
                     </f:midColumnPages>
                     <f:endColumnPages>
                         <Page >
