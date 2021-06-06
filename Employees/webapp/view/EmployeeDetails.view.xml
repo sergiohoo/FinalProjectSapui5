@@ -30,10 +30,13 @@
                         <VBox>
                             <HBox>
                                 <Text text="{i18n>incorporationDate}:" class="boldText sapUiTinyMarginEnd" />
-                                <Text text="{odataEmployees>CreationDate}" />
+                                <!-- Se aplica un formatter a la fecha
+                                    que está en EmployeeDetails.controller.js > formatDate(date) -->
+                                <Text text="{path: 'odataEmployees>CreationDate', formatter: '.dateFormat'}" />
                             </HBox>
                             <HBox>
                                 <Text text="{i18n>type}:" class="boldText sapUiTinyMarginEnd" />
+                                <!-- El tipo de empleado se define 0=interno, 1=autónomo, 2=gerente -->
                                 <Text text="{= ${odataEmployees>Type} === '0' ? ${i18n>intern} :
                                             ${odataEmployees>Type} === '1' ? ${i18n>freelancer} :
                                             ${odataEmployees>Type} === '2' ? ${i18n>manager} : ''}" />

@@ -36,6 +36,12 @@ sap.ui.define([
 
             onDismiss: function () {
                 
+            },
+
+            // Formatter para visualizar la fecha con el patrón dd/MM/yyyy
+            dateFormat: function (date) {
+                var pattern = sap.ui.core.format.DateFormat.getDateInstance({pattern : 'dd/MM/yyyy'});
+                return pattern.format(date);
             }
 		});
 	});
