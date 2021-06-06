@@ -14,3 +14,10 @@
 .mediumText {
     font-size: 1.5rem
 }
+
+/*
+    Remueve los bordes de los paneles
+*/
+.no-borders .sapMPanelContent:not(.sapMPanelBGTransparent) {
+    border-bottom: none !important;
+}

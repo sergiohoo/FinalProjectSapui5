@@ -1,63 +1,101 @@
-<mvc:View
+<mvc:View xmlns:uxap="sap.uxap" xmlns:tnt="sap.tnt" xmlns:cards="sap.f.cards"
         controllerName="hr.Employees.controller.EmployeeDetails"
         xmlns:core="sap.ui.core"
         xmlns:mvc="sap.ui.core.mvc"
         displayBlock="true"
         xmlns="sap.m">
 
+    
+
     <Page title="{i18n>employeeDetails}" visible="{= ${odataEmployees>Dni} !== null ? true : false}">
         <content>
-            <Panel>
-                <FlexBox height="65px" alignItems="Start" justifyContent="Start">
-                    <items>
-                        <HBox>
-                            <!-- El icono depende del tipo de empleado -->
-                            <core:Icon class="sapUiSmallMarginEnd primaryColor" size="5rem"
-                                src="{= ${odataEmployees>Type}==='0' ? 'sap-icon://employee-pane' :
-                                   ${odataEmployees>Type}==='1' ? 'sap-icon://employee' :
-                                   ${odataEmployees>Type}==='2' ? 'sap-icon://leads' : 'sap-icon://empty'}"></core:Icon>
-                            <VBox>
-                                <Text text="{odataEmployees>FirstName} {odataEmployees>LastName}" class="boldText largeText" />
-                                <Text text="{odataEmployees>Dni}" class="mediumText"/>
-                            </VBox>
-                        </HBox>
-                    </items>
-                </FlexBox>
-            </Panel>
-            <Panel>
-                <FlexBox height="65px" alignItems="Start" justifyContent="SpaceBetween">
-                    <items>
-                        <VBox>
-                            <HBox>
-                                <Text text="{i18n>incorporationDate}:" class="boldText sapUiTinyMarginEnd" />
-                                <!-- Se aplica un formatter a la fecha
-                                    que está en EmployeeDetails.controller.js > formatDate(date) -->
-                                <Text text="{path: 'odataEmployees>CreationDate', formatter: '.dateFormat'}" />
-                            </HBox>
-                            <HBox>
-                                <Text text="{i18n>type}:" class="boldText sapUiTinyMarginEnd" />
-                                <!-- El tipo de empleado se define 0=interno, 1=autónomo, 2=gerente -->
-                                <Text text="{= ${odataEmployees>Type} === '0' ? ${i18n>intern} :
-                                            ${odataEmployees>Type} === '1' ? ${i18n>freelancer} :
-                                            ${odataEmployees>Type} === '2' ? ${i18n>manager} : ''}" />
-                            </HBox>
-                            <HBox>
-                                <Text text="{i18n>comments}:" class="boldText sapUiTinyMarginEnd" />
-                                <Text text="{odataEmployees>Comments}" />
-                            </HBox>
-                        </VBox>
-                    </items>
-                </FlexBox>
-            </Panel>
-
-            <Panel class="sapUiSizeCompact" backgroundDesign="Transparent">
-                <headerToolbar>
-                    <Toolbar>
-                        
-                    </Toolbar>
-                </headerToolbar>
-            </Panel>
+            <!-- HEADER DE LA PÁGINA
+                    QUE CONTIENE LOS DATOS DEL EMPLEADO
+                    Y EL TOOLBAR DE FICHEROS E HISTORIAL -->
+            <uxap:ObjectPageHeaderContent>
+                <uxap:content>
+                    <!-- Panel superior, con los datos básicos del empleado -->
+                    <Panel class="no-borders">
+                        <FlexBox height="65px" alignItems="Start" justifyContent="Start">
+                            <items>
+                                <HBox>
+                                    <!-- El icono depende del tipo de empleado -->
+                                    <core:Icon class="sapUiSmallMarginEnd primaryColor" size="5rem"
+                                        src="{= ${odataEmployees>Type}==='0' ? 'sap-icon://employee-pane' :
+                                        ${odataEmployees>Type}==='1' ? 'sap-icon://employee' :
+                                        ${odataEmployees>Type}==='2' ? 'sap-icon://leads' : 'sap-icon://empty'}"></core:Icon>
+                                    <VBox class="sapUiSmallMarginTop">
+                                        <Text text="{odataEmployees>FirstName} {odataEmployees>LastName}" class="boldText largeText" />
+                                        <Text text="{odataEmployees>Dni}" class="mediumText"/>
+                                    </VBox>
+                                </HBox>
+                            </items>
+                        </FlexBox>
+                    </Panel>
+                    <!-- Segundo panel, que tiene datos secundarios del empleado -->
+                    <Panel>
+                        <FlexBox height="65px" alignItems="Start" justifyContent="SpaceBetween">
+                            <items>
+                                <VBox>
+                                    <HBox>
+                                        <Text text="{i18n>incorporationDate}:" class="boldText sapUiTinyMarginEnd" />
+                                        <!-- Se aplica un formatter a la fecha
+                                            que está en EmployeeDetails.controller.js > formatDate(date) -->
+                                        <Text text="{path: 'odataEmployees>CreationDate', formatter: '.dateFormat'}" />
+                                    </HBox>
+                                    <HBox>
+                                        <Text text="{i18n>type}:" class="boldText sapUiTinyMarginEnd" />
+                                        <!-- El tipo de empleado se define 0=interno, 1=autónomo, 2=gerente -->
+                                        <Text text="{= ${odataEmployees>Type} === '0' ? ${i18n>intern} :
+                                                    ${odataEmployees>Type} === '1' ? ${i18n>freelancer} :
+                                                    ${odataEmployees>Type} === '2' ? ${i18n>manager} : ''}" />
+                                    </HBox>
+                                    <HBox>
+                                        <Text text="{i18n>comments}:" class="boldText sapUiTinyMarginEnd" />
+                                        <Text text="{odataEmployees>Comments}" />
+                                    </HBox>
+                                </VBox>
+                            </items>
+                        </FlexBox>
+                    </Panel>
+                    <!-- Tercer panel, que contiene el icon tab bar para ficheros e historial -->
+                    <Panel>
+                        <IconTabBar
+                            id="idIconTabBarMulti"
+                            expanded="{device>/isNoPhone}"
+                            class="sapUiResponsiveContentPadding">
+                            <items>
+                                <!-- Pestaña de archivos adjuntos -->
+                                <IconTabFilter
+                                    icon="sap-icon://attachment"
+                                    key="attachments"
+                                    count="3">
+                                    <UploadCollection id="attachment"
+                                                            maximumFilenameLength="55"
+                                                            maximumFileSize="10"
+                                                            multiple="true"
+                                                            sameFilenameAllowed="true"
+                                                            instantUpload="true"
+                                                            uploadUrl="/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments"
+                                                            change="onFileChange"
+                                                            uploadComplete="onFileUploadComplete"
+                                                            beforeUploadStarts="onFileBeforeUpload"
+                                                            fileDeleted="onFileDeleted" />
+                                </IconTabFilter>
+                                <!-- Pestaña de historial de aumentos -->
+                                <IconTabFilter
+                                    icon="sap-icon://money-bills"
+                                    key="notes"
+                                    count="12">
+                                    <Text text="Notes go here ..." />
+                                </IconTabFilter>
+                            </items>
+                        </IconTabBar>
+                    </Panel>
+                </uxap:content>
+            </uxap:ObjectPageHeaderContent>
         </content>
+        
         <footer>
             <Toolbar >
                 <ToolbarSpacer ></ToolbarSpacer>
