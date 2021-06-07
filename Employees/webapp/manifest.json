@@ -71,11 +71,15 @@
       },
       "odataEmployees": {
         "dataSource": "mainService",
+        "type": "sap.ui.model.odata.v2.ODataModel",
         "preload": true,
         "settings": {
           "defaultBindingMode": "TwoWay",
-          "defaultCountMode": "Inline",
-          "refreshAfterChange": false
+          "defaultOperationMode" : "Server",
+          "defaultCountMode": "Request",
+          "refreshAfterChange": false,
+          "useBatch": false,
+          "defaultUpdateMethod": "Put"
         }
       }
     },

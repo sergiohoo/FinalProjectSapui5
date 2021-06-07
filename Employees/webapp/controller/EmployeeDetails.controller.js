@@ -16,41 +16,10 @@ sap.ui.define([
 		return Controller.extend("hr.Employees.controller.Employees", {
 			onInit: function () {
 
-                // Modelo del empleado que se está viendo
+                // Modelo de los archivos adjuntos
                 var oView = this.getView();
-                
-                var oJSONCurrentEmployee = new sap.ui.model.json.JSONModel({
-                    SapId: this.getOwnerComponent().SapId,
-                    EmployeeId: 0,
-                    Type: '',
-                    FirstName: '',
-                    LastName: '',
-                    Dni: '',
-                    AnnualSalary: 0,
-                    DailyPrice: 0,
-                    CreationDate: null,
-                    Comments: ''
-                });
-                oView.setModel(oJSONCurrentEmployee, "currEmply");
-            },
-
-            onAfterRendering: function () {
-                //Bind files
-                if(this.getView().getModel("odataEmployees")) {
-                    var employeeId = this.getView().getModel("odataEmployees").getProperty("/EmployeeId").toString();
-                    this.byId("uploadCollection").bindAggregation("items", {
-                        path: "odataEmployees>/Attachments",
-                        filters: [
-                            new Filter("SapId", FilterOperator.EQ, this.getOwnerComponent().SapId),
-                            new Filter("EmployeeId", FilterOperator.EQ, employeeId),
-                        ],
-                        template: new sap.m.UploadCollectionItem({
-                            documentId: "{odataEmployees>Attachments>/AttId}",
-                            visibleEdit: false,
-                            fileName: "{odataEmployees>Attachments>/DocName}"
-                        }).attachPress(this.downloadFile)
-                    });
-                }
+                var oJSONAttachments = new sap.ui.model.json.JSONModel();
+                oView.setModel(oJSONAttachments, "attachmentsModel");
             },
 
             onPromote: function () {
@@ -63,8 +32,10 @@ sap.ui.define([
 
             // Formatter para visualizar la fecha con el patrón dd/MM/yyyy
             dateFormat: function (date) {
-                var pattern = sap.ui.core.format.DateFormat.getDateInstance({pattern : 'dd MMM yyyy'});
-                return pattern.format(date);
+                if(date) {
+                    var pattern = sap.ui.core.format.DateFormat.getDateInstance({pattern : 'dd MMM yyyy'});
+                    return pattern.format(date);
+                }
             },
 
             // Función que crea el slug y lo agrega al UploadCollection
@@ -93,10 +64,12 @@ sap.ui.define([
                 oUplodCollection.addHeaderParameter(oCustomerHeaderToken);
             },
 
+            // Función que refresca el binding del control Upload
             onFileUploadComplete: function (oEvent) {
                 oEvent.getSource().getBinding("items").refresh();
             },
 
+            
             onFileDeleted: function (oEvent) {
                 var oUploadCollection = oEvent.getSource();
                 var sPath = oEvent.getParameter("item").getBindingContext("odataEmployees").getPath();

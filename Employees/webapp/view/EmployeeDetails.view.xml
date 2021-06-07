@@ -69,18 +69,29 @@
                                 <IconTabFilter
                                     icon="sap-icon://attachment"
                                     key="attachments"
-                                    count="3">
-                                    <UploadCollection id="attachment"
-                                                            maximumFilenameLength="55"
-                                                            maximumFileSize="10"
-                                                            multiple="true"
-                                                            sameFilenameAllowed="true"
-                                                            instantUpload="true"
-                                                            uploadUrl="/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments"
-                                                            change="onFileChange"
-                                                            uploadComplete="onFileUploadComplete"
-                                                            beforeUploadStarts="onFileBeforeUpload"
-                                                            fileDeleted="onFileDeleted" />
+                                    count="{attachmentsModel>/results/length}">
+                                    <UploadCollection
+                                        items="{path:'attachmentsModel>/results', templateShareable: false}"
+                                        id="attachment"
+                                        maximumFilenameLength="55"
+                                        maximumFileSize="10"
+                                        multiple="true"
+                                        sameFilenameAllowed="true"
+                                        instantUpload="true"
+                                        uploadUrl="/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments"
+                                        change="onFileChange"
+                                        uploadComplete="onFileUploadComplete"
+                                        beforeUploadStarts="onFileBeforeUpload"
+                                        fileDeleted="onFileDeleted">
+                                        <items>
+                                            <UploadCollectionItem
+                                                documentId="{attachmentsModel>AttId}"
+                                                visibleEdit="false"
+                                                fileName="{attachmentsModel>DocName}"
+                                                press="downloadFile"
+                                            ></UploadCollectionItem>
+                                        </items>
+                                        </UploadCollection>
                                 </IconTabFilter>
                                 <!-- Pestaña de historial de aumentos -->
                                 <IconTabFilter
