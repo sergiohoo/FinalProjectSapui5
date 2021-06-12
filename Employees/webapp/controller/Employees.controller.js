@@ -45,9 +45,10 @@ sap.ui.define([
                 var EmployeeId = parseInt(path.split('\'')[1]).toString().padStart(3,'0');
                 var SapId = this.getOwnerComponent().SapId;
 
+                // Carga los valores de EmployeeId y SapId en el modelo de Nuevo Salario
                 var mNewSalary = detailView.getModel("jsonNewSalary");
-                mNewSalary.setProperty("EmployeeId",EmployeeId);
-                mNewSalary.setProperty("SapId",SapId);
+                mNewSalary.setProperty("/EmployeeId",EmployeeId);
+                mNewSalary.setProperty("/SapId",SapId);
 
                 // Crea filtros a partir del path
                 var filters = [];

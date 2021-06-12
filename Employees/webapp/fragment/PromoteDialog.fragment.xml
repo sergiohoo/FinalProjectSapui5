@@ -10,7 +10,7 @@
                     <Input required="true" id="promSalaryAmmount"
                             value="{jsonNewSalary>/Ammount}"
                             change="updateAmmountState" liveChange="acceptNumbersOnly"
-                            valueState="{jsonNewSalary>/ammountState}" />
+                            valueState="{jsonNewSalary>/ammountState}" maxLength="6" />
 
                     <Label text="{i18n>creationDate}" required="true"/>
                     <DatePicker required="true" id="promCreationDate"
@@ -19,10 +19,10 @@
                             valueState="{jsonNewSalary>/creationDateState}" />
 
                     <Label text="{i18n>comments}" required="true"/>
-                    <Input required="true" id="promComments"
+                    <TextArea required="true" id="promComments"
                             value="{jsonNewSalary>/Comments}"
                             change="updateCommentsState" liveChange="true"
-                            valueState="{jsonNewSalary>/commentsState}" />           
+                            valueState="{jsonNewSalary>/commentsState}" maxLength="200" />           
                 </form:SimpleForm>
             </content>
             <beginButton>

@@ -1,7 +1,8 @@
 sap.ui.define([
         "sap/ui/core/mvc/Controller",
         "sap/ui/model/Filter",
-        "sap/ui/model/FilterOperator"
+        "sap/ui/model/FilterOperator",
+        "sap/m/MessageBox"
 	],
 	/**
      * Controlador de la
@@ -9,8 +10,9 @@ sap.ui.define([
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      * @param {typeof sap.ui.model.Filter} Filter 
      * @param {typeof sap.ui.model.FilterOperator} FilterOperator 
+     * @param {typeof sap.m.MessageBox} MessageBox
      */
-	function (Controller, Filter, FilterOperator) {
+	function (Controller, Filter, FilterOperator, MessageBox) {
 		"use strict";
 
 		return Controller.extend("hr.Employees.controller.Employees", {
@@ -37,8 +39,16 @@ sap.ui.define([
                 oView.setModel(oJSONNewSalary, "jsonNewSalary");
             },
 
+            // Función que se ejecuta al presionar el botón Ascender que abre el cuadro de diálogo
             onPromote: function () {
                 
+                // Limpia el formulario del cuadro de diálogo
+                var mNewSalary = this.getView().getModel("jsonNewSalary")
+                mNewSalary.setProperty("/Ammount",null);
+                mNewSalary.setProperty("/CreationDate",null);
+                mNewSalary.setProperty("/Comments",null);
+
+                // Si es la primera vez que se abre, lo inicializa desde el fragmento
                 if (!this._oPromoteDialog) {
                     this._oPromoteDialog = sap.ui.xmlfragment("hr.Employees.fragment.PromoteDialog", this);
                     this.getView().addDependent(this._oPromoteDialog);
@@ -47,10 +57,14 @@ sap.ui.define([
                 this._oPromoteDialog.open();
             },
 
+            // Función que se ejecuta al presionar el botón para cerrar el formulario
             onClosePromoteDialog: function () {
                 this._oPromoteDialog.close();
             },
 
+            // Función para evitar que se ingresen caracteres no numéricos en el campo salario
+            // Referencia:
+            // https://answers.sap.com/questions/134304/how-to-make-input-field-accept-only-numeric-values.html
             acceptNumbersOnly: function (oEvent) {
                 var _oInput = oEvent.getSource();
                 var val = _oInput.getValue();
@@ -105,11 +119,81 @@ sap.ui.define([
             },
 
             onAcceptPromoteDialog: function () {
+                var mNewSalary = this.getView().getModel("jsonNewSalary");
 
+                // Crea el cuerpo del salario que se creará
+                // http://erp13.sap4practice.com:9037/sap/opu/odata/sap/ZEMPLOYEES_SRV/Salaries/?$format=json        
+                var bodySalary = {
+                    SapId: mNewSalary.getProperty("/SapId"),
+                    EmployeeId: mNewSalary.getProperty("/EmployeeId"),
+                    CreationDate: mNewSalary.getProperty("/CreationDate"),
+                    Ammount: mNewSalary.getProperty("/Ammount"),
+                    Waers: "EUR",
+                    Comments: mNewSalary.getProperty("/Comments")
+                }
+                // Inserta el salario del usuario en el modelo OData
+                this.getView().getModel("odataEmployees").create("/Salaries", bodySalary, {
+                    success: function (res) {
+                        // Si la respuesta es success, se muestra un mensaje de confirmación
+                        var oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+                        MessageBox.show(
+                        oResourceBundle.getText("messageSuccessPromotion"), {
+                            icon: MessageBox.Icon.INFORMATION,
+                            title: oResourceBundle.getText("titleSuccessPromotion"),
+                            actions: [MessageBox.Action.OK],
+                            onClose: function (oAction) {
+                                this._oPromoteDialog.close();
+                            }.bind(this)
+                        }
+                    );
+                    }.bind(this),
+                    error: function (e) {
+                        console.log("error save salary");
+                    }.bind(this)
+
+                });
             },
 
             onDismiss: function () {
-                
+                var oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+
+                MessageBox.confirm(
+                    oResourceBundle.getText("messageConfirmDeletion"), {
+                        title: oResourceBundle.getText("titleConfirmDeletion"),
+                        onClose: function (oAction) {
+                            if(oAction === "OK") {
+                                // Obtiene el empleado que se está visualizando
+                                var oData = this.getView().getBindingContext("odataEmployees").getObject();
+                                var EmployeeId = oData.EmployeeId;
+                                var SapId = oData.SapId;
+
+                                var sPath = "/Users(EmployeeId='"+EmployeeId+"',SapId='"+SapId+"')";
+
+                                this.getView().getModel("odataEmployees").remove(sPath, {
+                                    success: function () {
+                                        // Si la respuesta es success, se muestra un mensaje de confirmación
+                                        var oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+                                        MessageBox.show(
+                                        oResourceBundle.getText("messageSuccessDeletion"), {
+                                            icon: MessageBox.Icon.INFORMATION,
+                                            title: oResourceBundle.getText("titleSuccessDeletion"),
+                                            actions: [MessageBox.Action.OK],
+                                            onClose: function (oAction) {
+                                                // Al cerrar el mensaje, se ve vacío el panel derecho
+                                                this.getView().unbindContext("odataEmployees");
+                                                var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+                                                oRouter.navTo("RouteEmployees");
+                                            }.bind(this)
+                                        });
+                                    }.bind(this),
+                                    error: function () {
+
+                                    }.bind(this)
+                                });
+                            }
+                        }.bind(this)
+                    }
+                );  
             },
 
             // Formatter para visualizar la fecha con el patrón dd/MM/yyyy

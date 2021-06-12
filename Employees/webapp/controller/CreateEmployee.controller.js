@@ -126,15 +126,15 @@ sap.ui.define([
                     CreationDate: mEmployee.getProperty("/incorporationDate"),
                     Comments: mEmployee.getProperty("/comments"),
                 }
-                console.log(body);
+                // console.log(body);
                 this.getView().getModel("odataEmployees").create("/Users", body, {
                     success: function (res) {
-                        console.log("success save employee");
+                        // console.log("success save employee");
                         // Llama a la función que insertará el salario
                         this._saveSalary();
                     }.bind(this),
                     error: function (e) {
-                        console.log("error save employee");
+                        // console.log("error save employee");
                     }.bind(this)
                 });
             },
