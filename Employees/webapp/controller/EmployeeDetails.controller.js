@@ -40,13 +40,19 @@ sap.ui.define([
 
             // Función que crea el slug y lo agrega al UploadCollection
             onFileBeforeUpload: function (oEvent) {
-                var mEmployee = this.getView().getModel("odataEmployees");
-                let fileName = oEvent.getParameter("fileName");
+                
+                var bindingContext = this.getView().getBindingContext("odataEmployees");
+                var path = bindingContext.getPath();
+                // El EmployeeId viene desde binding context con ceros a la izquierda
+                // es por eso que se convierte a entero y luego a string:
+                var EmployeeId = parseInt(bindingContext.getModel().getProperty(path).EmployeeId).toString().padStart(3,'0');
+
+                var fileName = oEvent.getParameter("fileName");
                 // @ts-ignore
-                let oCustomerHeaderSlug = new sap.m.UploadCollectionParameter({
+                var oCustomerHeaderSlug = new sap.m.UploadCollectionParameter({
                     name: "slug",
                     value: this.getOwnerComponent().SapId + ";" + 
-                        mEmployee.getProperty("/EmployeeId").toString() + ";" + fileName
+                        EmployeeId + ";" + fileName
                 });
                 oEvent.getParameters().addHeaderParameter(oCustomerHeaderSlug);
             },
@@ -54,38 +60,106 @@ sap.ui.define([
             // Función que obtiene el token desde el modelo OData
             // para subir el fichero
             onFileChange: function (oEvent) {
-                let oUplodCollection = oEvent.getSource();
+                var oUplodCollection = oEvent.getSource();
+                var tokenValue = this.getView().getModel("odataEmployees").getSecurityToken();
                 // Header Token CSRF - Cross-site request forgery
                 // @ts-ignore
-                let oCustomerHeaderToken = new sap.m.UploadCollectionParameter({
+                var oCustomerHeaderToken = new sap.m.UploadCollectionParameter({
                     name: "x-csrf-token",
-                    value: this.getView().getModel("odataEmployees").getSecurityToken()
+                    value: tokenValue
                 });
                 oUplodCollection.addHeaderParameter(oCustomerHeaderToken);
             },
 
-            // Función que refresca el binding del control Upload
-            onFileUploadComplete: function (oEvent) {
-                oEvent.getSource().getBinding("items").refresh();
-            },
+            // Función que refresca el binding del UploadCollection control
+            uploadCollectionSetBinding: function () {
+                // Obtiene el EmployeeId y SapId del empleado que se está visualizando
+                var path = this.getView().getBindingContext("odataEmployees").getPath();
 
-            
-            onFileDeleted: function (oEvent) {
-                var oUploadCollection = oEvent.getSource();
-                var sPath = oEvent.getParameter("item").getBindingContext("odataEmployees").getPath();
-                this.getView().getModel("odataEmployees").remove(sPath, {
-                    success: function () {
-                        oUploadCollection.getBinding("items").refresh();
-                    },
-                    error: function () {
+                var EmployeeId = parseInt(path.split('\'')[1]).toString().padStart(3,'0');
+                var SapId = this.getOwnerComponent().SapId;
 
-                    }
+                // Crea filtros a partir del path
+                var filters = [];
+                var filterEmployee = new sap.ui.model.Filter("EmployeeId", sap.ui.model.FilterOperator.EQ, EmployeeId.toString());
+                var filterSapId = new sap.ui.model.Filter("SapId", sap.ui.model.FilterOperator.EQ, this.getOwnerComponent().SapId);
+
+                // Obtiene los attachments del empleado
+                this.getView().getModel("odataEmployees").read("/Attachments", {
+                    // Aplica el filtro de SapId
+                    // Por alguna razón desconocida, no permite aplicar ambos filtros a la vez,
+                    // por eso el siguiente filtro se aplica al UploadCollection después del binding.
+                    filters: [filterSapId],
+                    success: function (data) {
+
+                        var detailView = this.getView();
+
+                        // Actualiza los datos del modelo attachments de la vista
+                        // que es el origen de los datos de los items de UploadCollection
+                        var attachmentsModel = this.getView().getModel("attachmentsModel");
+                        attachmentsModel.setData(data);
+
+                        // Filtra los ítemes del UploadCollection por EmployeeId
+                        // Referencia:
+                        // https://answers.sap.com/questions/10897216/filter-across-multiple-columns-on-jsonmodel.html
+                        var list = detailView.byId("attachment")
+                        var binding = list.getBinding("items");  
+                        binding.filter([filterEmployee], "Application");
+
+                    }.bind(this),
+                    error: function (e) {
+
+                    }.bind(this)
                 });
             },
 
-            downloadFile : function(oEvent) {
-                const sPath = oEvent.getSource().getBindingContext("odataEmployees").getPath();
-                window.open("/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments" + sPath + "/$value");
+            onFileUploadComplete: function (oEvent) {
+
+                this.uploadCollectionSetBinding();
+                oEvent.getSource().getBinding("items").refresh();
+            },
+
+            // Función que se ejecuta al borrar un archivo
+            onFileDeleted: function (oEvent) {
+
+                var oUploadCollection = oEvent.getSource();
+                
+                // Obtiene el contexto, el path y los datos del archivo
+                var oContext = oEvent.getParameter("item").getBindingContext("attachmentsModel");
+                var sPath = oEvent.getParameter("item").getBindingContext("attachmentsModel").getPath();
+                var AttId = oContext.getModel().getProperty(sPath).AttId;
+                var EmployeeId = oContext.getModel().getProperty(sPath).EmployeeId;
+                var SapId = oContext.getModel().getProperty(sPath).SapId;
+
+                // Crea el path para apuntar al archivo en el modelo OData
+                var attachmetsPath = "/Attachments(AttId='"+AttId+"',SapId='"+SapId+"',EmployeeId='"+EmployeeId+"')";
+
+                // Ejecuta la función remove al path en el modelo OData
+                this.getView().getModel("odataEmployees").remove(attachmetsPath, {
+                    success: function () {
+                        this.uploadCollectionSetBinding();
+                        oUploadCollection.getBinding("items").refresh();
+                    }.bind(this),
+                    error: function () {
+                        this.uploadCollectionSetBinding();
+                        oUploadCollection.getBinding("items").refresh();
+                    }.bind(this)
+                });
+            },
+            
+            downloadFile : function (oEvent) {
+
+                // Obtiene el contexto, el path y los datos del archivo
+                var oContext = oEvent.getSource().getBindingContext("attachmentsModel");
+                var sPath = oEvent.getSource().getBindingContext("attachmentsModel").getPath();
+                var AttId = oContext.getModel().getProperty(sPath).AttId;
+                var EmployeeId = oContext.getModel().getProperty(sPath).EmployeeId
+                var SapId = oContext.getModel().getProperty(sPath).SapId
+
+                // Crea el path para apuntar al archivo en el modelo OData
+                var attachmetsPath = "(AttId='"+AttId+"',SapId='"+SapId+"',EmployeeId='"+EmployeeId+"')"
+                
+                window.open("/sap/opu/odata/sap/ZEMPLOYEES_SRV/Attachments" + attachmetsPath + "/$value");
             }
 		});
 	});

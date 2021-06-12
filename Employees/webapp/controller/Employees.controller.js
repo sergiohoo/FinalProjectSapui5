@@ -30,28 +30,43 @@ sap.ui.define([
                 });
             },
             
+            // Función que se ejecuta al seleccionar un empleado en el listado
+            // Aplica el binding context a la vista de detalles
+            // y al elemento UploadCollection de la vista
             onSelectEmployee: function (oEvent) {
                 
                 var path = oEvent.getSource().getBindingContext("odataEmployees").getPath();
 
-                var EmployeeId = parseInt(path.split('\'')[1]);
+                // Aplica el binding conext a la vista de detalles según el path seleccionado de la lista
+                var detailView = this.getView().byId("employeeDetailsView");
+                detailView.bindElement("odataEmployees>" + path);
+
+                // Obtiene el EmployeeId y SapId del empleado que se está visualizando
+                var EmployeeId = parseInt(path.split('\'')[1]).toString().padStart(3,'0');
                 var SapId = this.getOwnerComponent().SapId;
 
+                // Crea filtros a partir del path
                 var filters = [];
-
-                var filterEmployee = new sap.ui.model.Filter("EmployeeId", sap.ui.model.FilterOperator.EQ, EmployeeId.toString());
+                var filterEmployee = new sap.ui.model.Filter("EmployeeId", sap.ui.model.FilterOperator.EQ, EmployeeId);
                 var filterSapId = new sap.ui.model.Filter("SapId", sap.ui.model.FilterOperator.EQ, this.getOwnerComponent().SapId);
 
+                // Obtiene los attachments del empleado
                 this.getView().getModel("odataEmployees").read("/Attachments", {
+                    // Aplica el filtro de SapId
+                    // Por alguna razón desconocida, no permite aplicar ambos filtros a la vez,
+                    // por eso el siguiente filtro se aplica al UploadCollection después del binding.
                     filters: [filterSapId],
                     success: function (data) {
+                        
                         var detailView = this.getView().byId("employeeDetailsView");
 
+                        // Actualiza los datos del modelo attachments de la vista de detalles
+                        // que es el origen de los datos de los items de UploadCollection
                         var attachmentsModel = detailView.getModel("attachmentsModel");
                         attachmentsModel.setData(data);
-                        
-                        detailView.bindElement("odataEmployees>" + path);
 
+                        // Filtra los ítemes del UploadCollection por EmployeeId
+                        // Referencia:
                         // https://answers.sap.com/questions/10897216/filter-across-multiple-columns-on-jsonmodel.html
                         var list = detailView.byId("attachment")
                         var binding = list.getBinding("items");  
@@ -59,9 +74,6 @@ sap.ui.define([
 
                     }.bind(this),
                     error: function (e) {
-
-                        var detailView = this.getView().byId("employeeDetailsView");
-                        detailView.bindElement("odataEmployees>" + path);
 
                     }.bind(this)
                 });

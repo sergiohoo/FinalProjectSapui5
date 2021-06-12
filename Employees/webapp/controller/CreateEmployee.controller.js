@@ -209,7 +209,7 @@ sap.ui.define([
                 let oCustomerHeaderSlug = new sap.m.UploadCollectionParameter({
                     name: "slug",
                     value: this.getOwnerComponent().SapId + ";" + 
-                        mEmployee.getProperty("/employeeId").toString() + ";" + fileName
+                        mEmployee.getProperty("/employeeId").toString().padStart(3,'0') + ";" + fileName
                 });
                 oEvent.getParameters().addHeaderParameter(oCustomerHeaderSlug);
             },
