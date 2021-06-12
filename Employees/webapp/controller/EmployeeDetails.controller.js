@@ -20,9 +20,91 @@ sap.ui.define([
                 var oView = this.getView();
                 var oJSONAttachments = new sap.ui.model.json.JSONModel();
                 oView.setModel(oJSONAttachments, "attachmentsModel");
+
+                // Inicializa el modelo para el nuevo salario de ascenso
+                // tanto los valores como los estados de los campos
+                var oJSONNewSalary = new sap.ui.model.json.JSONModel({
+                    SapId: this.getOwnerComponent().SapId,
+                    EmployeeId: null,
+                    Ammount: null,
+                    CreationDate: null,
+                    Comments: '',
+
+                    ammountState: undefined,
+                    creationDateState: undefined,
+                    commentsState: undefined
+                });
+                oView.setModel(oJSONNewSalary, "jsonNewSalary");
             },
 
             onPromote: function () {
+                
+                if (!this._oPromoteDialog) {
+                    this._oPromoteDialog = sap.ui.xmlfragment("hr.Employees.fragment.PromoteDialog", this);
+                    this.getView().addDependent(this._oPromoteDialog);
+                }
+
+                this._oPromoteDialog.open();
+            },
+
+            onClosePromoteDialog: function () {
+                this._oPromoteDialog.close();
+            },
+
+            acceptNumbersOnly: function (oEvent) {
+                var _oInput = oEvent.getSource();
+                var val = _oInput.getValue();
+                val = val.replace(/[^\d]/g, '');
+                _oInput.setValue(val);
+            },
+
+            // Función que se ejecuta en el evento change del campo Ammount
+            // y actualiza su estado
+            updateAmmountState: function (oEvent) {
+                var mNewSalary = this.getView().getModel("jsonNewSalary");
+
+                if (!oEvent.getSource().getValue()) {
+                    mNewSalary.setProperty("/commentsState", "Error");
+                } else {
+                    mNewSalary.setProperty("/commentsState", "None");
+                }
+
+                mNewSalary.refresh(true);
+            },
+            
+            // Función que se ejecuta en el evento change del campo Comments
+            // y actualiza su estado
+            updateCommentsState: function (oEvent) {
+                var mNewSalary = this.getView().getModel("jsonNewSalary");
+
+                if (!oEvent.getSource().getValue()) {
+                    mNewSalary.setProperty("/ammountState", "Error");
+                } else {
+                    mNewSalary.setProperty("/ammountState", "None");
+                }
+
+                mNewSalary.refresh(true);
+            },
+
+            // Función que se ejecuta en el evento change del campo CreationDate
+            // y actualiza su estado
+            creationDateState: function (oEvent) {
+                var mNewSalary = this.getView().getModel("jsonNewSalary");
+
+                if (!oEvent.getSource().getValue()) {
+                    mNewSalary.setProperty("/creationDateState", "Error");
+                } else {
+                    if (!oEvent.getSource().isValidValue()) {
+                        mNewSalary.setProperty("/creationDateState", "Error");
+                    } else {
+                        mNewSalary.setProperty("/creationDateState", "None");
+                    }
+                }
+
+                mNewSalary.refresh(true);
+            },
+
+            onAcceptPromoteDialog: function () {
 
             },
 

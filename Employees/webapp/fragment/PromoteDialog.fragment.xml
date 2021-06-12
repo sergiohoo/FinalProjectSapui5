@@ -1,0 +1,35 @@
+<core:FragmentDefinition
+        xmlns:core="sap.ui.core"
+        xmlns:form="sap.ui.layout.form"
+        xmlns="sap.m"
+        xmlns:u="sap.ui.unified">
+        <Dialog title="{i18n>newPromotion}">
+            <content>
+                <form:SimpleForm editable="true">
+                    <Label text="{i18n>salary}" required="true"/>
+                    <Input required="true" id="promSalaryAmmount"
+                            value="{jsonNewSalary>/Ammount}"
+                            change="updateAmmountState" liveChange="acceptNumbersOnly"
+                            valueState="{jsonNewSalary>/ammountState}" />
+
+                    <Label text="{i18n>creationDate}" required="true"/>
+                    <DatePicker required="true" id="promCreationDate"
+                            dateValue="{jsonNewSalary>/CreationDate}"
+                            change="updateCreationDateState"
+                            valueState="{jsonNewSalary>/creationDateState}" />
+
+                    <Label text="{i18n>comments}" required="true"/>
+                    <Input required="true" id="promComments"
+                            value="{jsonNewSalary>/Comments}"
+                            change="updateCommentsState" liveChange="true"
+                            valueState="{jsonNewSalary>/commentsState}" />           
+                </form:SimpleForm>
+            </content>
+            <beginButton>
+                <Button text="{i18n>accept}" press="onAcceptPromoteDialog"></Button>
+            </beginButton>
+            <endButton>
+                <Button text="{i18n>close}" press="onClosePromoteDialog"></Button>
+            </endButton>
+        </Dialog>
+</core:FragmentDefinition>
