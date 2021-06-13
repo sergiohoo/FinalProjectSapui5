@@ -1,7 +1,8 @@
 sap.ui.define([
         "sap/ui/core/mvc/Controller",
         "sap/ui/model/Filter",
-        "sap/ui/model/FilterOperator"
+        "sap/ui/model/FilterOperator",
+        "sap/ui/core/routing/History",
 	],
 	/**
      * Controlador de la
@@ -9,8 +10,9 @@ sap.ui.define([
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      * @param {typeof sap.ui.model.Filter} Filter 
      * @param {typeof sap.ui.model.FilterOperator} FilterOperator 
+     * @param {typeof sap.ui.core.routing.History} History 
      */
-	function (Controller, Filter, FilterOperator) {
+	function (Controller, Filter, FilterOperator, History) {
 		"use strict";
 
 		return Controller.extend("hr.Employees.controller.Employees", {
@@ -29,7 +31,20 @@ sap.ui.define([
                     oBinding.filter([new sap.ui.model.Filter(sPath, sOperator, sValue1)]);
                 });
             },
-            
+
+            // Función que vuelve a la vista anterior
+            onBack: function (oEvent) {
+                var oHistory = History.getInstance();
+                var sPreviousHash = oHistory.getPreviousHash();
+
+                if (sPreviousHash !== undefined) {
+                    window.history.go(-1);
+                } else {
+                    var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+                    oRouter.navTo("RouteLaunchpad", true);
+                }
+            },
+
             // Función que se ejecuta al seleccionar un empleado en el listado
             // Aplica el binding context a la vista de detalles
             // y al elemento UploadCollection de la vista
@@ -55,7 +70,7 @@ sap.ui.define([
                 var filterEmployee = new sap.ui.model.Filter("EmployeeId", sap.ui.model.FilterOperator.EQ, EmployeeId);
                 var filterSapId = new sap.ui.model.Filter("SapId", sap.ui.model.FilterOperator.EQ, this.getOwnerComponent().SapId);
 
-                // Obtiene los attachments del empleado
+                // Obtiene y carga los attachments del empleado
                 this.getView().getModel("odataEmployees").read("/Attachments", {
                     // Aplica el filtro de SapId
                     // Por alguna razón desconocida, no permite aplicar ambos filtros a la vez,
@@ -77,6 +92,33 @@ sap.ui.define([
                         var binding = list.getBinding("items");  
                         binding.filter([filterEmployee], "Application");
 
+                    }.bind(this),
+                    error: function (e) {
+
+                    }.bind(this)
+                });
+
+                // Obtiene y carga los salarios del empleado
+                this.getView().getModel("odataEmployees").read("/Salaries", {
+                    // Aplica el filtro de SapId
+                    // Por alguna razón desconocida, no permite aplicar ambos filtros a la vez,
+                    // por eso el siguiente filtro se aplica al UploadCollection después del binding.
+                    filters: [filterSapId],
+                    success: function (data) {
+                        
+                        var detailView = this.getView().byId("employeeDetailsView");
+
+                        // Actualiza los datos del modelo attachments de la vista de detalles
+                        // que es el origen de los datos de los items de Timeline
+                        var timelineModel = detailView.getModel("timelineModel");
+                        timelineModel.setData(data);
+
+                        // Filtra los ítemes del Timeline por EmployeeId
+                        // Referencia:
+                        // https://answers.sap.com/questions/10897216/filter-across-multiple-columns-on-jsonmodel.html
+                        var list = detailView.byId("timeline")
+                        var binding = list.getBinding("content");  
+                        binding.filter([filterEmployee], "Application");
                     }.bind(this),
                     error: function (e) {
 

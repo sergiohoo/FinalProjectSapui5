@@ -23,6 +23,10 @@ sap.ui.define([
                 var oJSONAttachments = new sap.ui.model.json.JSONModel();
                 oView.setModel(oJSONAttachments, "attachmentsModel");
 
+                // Modelo del timeline
+                var oJSONTimeline = new sap.ui.model.json.JSONModel();
+                oView.setModel(oJSONTimeline, "timelineModel");
+
                 // Inicializa el modelo para el nuevo salario de ascenso
                 // tanto los valores como los estados de los campos
                 var oJSONNewSalary = new sap.ui.model.json.JSONModel({
@@ -118,6 +122,50 @@ sap.ui.define([
                 mNewSalary.refresh(true);
             },
 
+            // Función que actualiza el historial de salarios
+            updateHistoricalTimeline: function () {
+                
+                // Obtiene el EmployeeId y SapId del empleado que se está visualizando
+                var path = this.getView().getBindingContext("odataEmployees").getPath();
+
+                var EmployeeId = parseInt(path.split('\'')[1]).toString().padStart(3,'0');
+                var SapId = this.getOwnerComponent().SapId;
+
+                // Crea filtros a partir del path
+                var filters = [];
+                var filterEmployee = new sap.ui.model.Filter("EmployeeId", sap.ui.model.FilterOperator.EQ, EmployeeId.toString());
+                var filterSapId = new sap.ui.model.Filter("SapId", sap.ui.model.FilterOperator.EQ, this.getOwnerComponent().SapId);
+
+                // Obtiene y carga los salarios del empleado
+                this.getView().getModel("odataEmployees").read("/Salaries", {
+                    // Aplica el filtro de SapId
+                    // Por alguna razón desconocida, no permite aplicar ambos filtros a la vez,
+                    // por eso el siguiente filtro se aplica al UploadCollection después del binding.
+                    filters: [filterSapId],
+                    success: function (data) {
+                        
+                        var detailView = this.getView();
+
+                        // Actualiza los datos del modelo attachments de la vista de detalles
+                        // que es el origen de los datos de los items de Timeline
+                        var timelineModel = detailView.getModel("timelineModel");
+                        timelineModel.setData(data);
+
+                        // Filtra los ítemes del Timeline por EmployeeId
+                        // Referencia:
+                        // https://answers.sap.com/questions/10897216/filter-across-multiple-columns-on-jsonmodel.html
+                        var list = detailView.byId("timeline")
+                        var binding = list.getBinding("content");  
+                        binding.filter([filterEmployee], "Application");
+                    }.bind(this),
+                    error: function (e) {
+
+                    }.bind(this)
+                });
+            },
+
+            // Función que se ejecuta en el evento press del botón Aceptar
+            // del cuadro de diálogo de Ascenso.
             onAcceptPromoteDialog: function () {
                 var mNewSalary = this.getView().getModel("jsonNewSalary");
 
@@ -142,6 +190,9 @@ sap.ui.define([
                             title: oResourceBundle.getText("titleSuccessPromotion"),
                             actions: [MessageBox.Action.OK],
                             onClose: function (oAction) {
+                                // Llama a la función que actualiza el historial
+                                this.updateHistoricalTimeline();
+                                // Cierra el cuadro de diálogo
                                 this._oPromoteDialog.close();
                             }.bind(this)
                         }
@@ -181,6 +232,7 @@ sap.ui.define([
                                             onClose: function (oAction) {
                                                 // Al cerrar el mensaje, se ve vacío el panel derecho
                                                 this.getView().unbindContext("odataEmployees");
+                                                this.getView().getModel("odataEmployees").updateBindings();
                                                 var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
                                                 oRouter.navTo("RouteEmployees");
                                             }.bind(this)

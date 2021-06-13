@@ -14,7 +14,7 @@ sap.ui.define([
             
             // Funciones de navegación desde el Launchpad
             
-            // A Employees
+            //  Employees
             toEmployees: function () {
                 var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
                 oRouter.navTo("RouteEmployees");
@@ -28,8 +28,7 @@ sap.ui.define([
 
             // A Orders
             toOrders: function () {
-                var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-                oRouter.navTo("RouteOrders");
+                window.open("https://e0390685trial-dev-logali-approuter.cfapps.eu10.hana.ondemand.com/logaligroupEmployees/index.html","_blank");
             }
 		});
 	});
